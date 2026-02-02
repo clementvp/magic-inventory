@@ -1,0 +1,102 @@
+# generated: 2026-02-02
+# project: magic-inventory
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-02
+project: magic-inventory
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Authentification et Accès Sécurisé
+  epic-1: backlog
+  1-1-initialisation-du-projet-et-configuration-de-base: backlog
+  1-2-layout-de-base-et-navigation: backlog
+  1-3-personnalisation-des-pages-dauthentification: backlog
+  1-4-gestion-du-profil-utilisateur: backlog
+  1-5-suppression-de-compte-rgpd: backlog
+  1-6-export-des-donnees-rgpd: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Organisation et Taxonomie
+  epic-2: backlog
+  2-1-gestion-des-categories-avec-categories-par-defaut: backlog
+  2-2-gestion-des-types: backlog
+  2-3-gestion-des-lieux-de-stockage: backlog
+  2-4-vue-contenu-dun-lieu-de-stockage: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Gestion de l'Inventaire
+  epic-3: backlog
+  3-1-creation-de-materiel-avec-associations: backlog
+  3-2-liste-inventaire-vue-table: backlog
+  3-3-liste-inventaire-vue-cards-avec-switcher: backlog
+  3-4-detail-dun-materiel: backlog
+  3-5-modification-dun-materiel: backlog
+  3-6-suppression-dun-materiel: backlog
+  3-7-recherche-et-filtrage-multi-criteres-inventaire: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Création et Gestion des Routines
+  epic-4: backlog
+  4-1-creation-de-routine-avec-categories: backlog
+  4-2-editeur-de-contenu-pour-routines: backlog
+  4-3-liaison-materiel-a-une-routine: backlog
+  4-4-liste-des-routines: backlog
+  4-5-detail-dune-routine-avec-navigation-bidirectionnelle: backlog
+  4-6-modification-dune-routine: backlog
+  4-7-suppression-dune-routine: backlog
+  4-8-recherche-et-filtrage-des-routines: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Spectacles et Préparation de Prestations
+  epic-5: backlog
+  5-1-creation-de-spectacle-et-liaison-routines: backlog
+  5-2-editeur-de-notes-pour-spectacles: backlog
+  5-3-liste-des-spectacles: backlog
+  5-4-detail-dun-spectacle-avec-navigation-bidirectionnelle: backlog
+  5-5-generation-de-checklist-interactive: backlog
+  5-6-modification-dun-spectacle: backlog
+  5-7-suppression-dun-spectacle: backlog
+  5-8-recherche-de-spectacles: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Capture Spontanée d'Idées
+  epic-6: backlog
+  6-1-creation-de-note-avec-auto-save: backlog
+  6-2-liste-des-notes: backlog
+  6-3-modification-dune-note: backlog
+  6-4-suppression-dune-note: backlog
+  epic-6-retrospective: optional
