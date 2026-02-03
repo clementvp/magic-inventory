@@ -1,24 +1,36 @@
-import { Head } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
+import { Button, Typography } from 'antd'
+
+const { Title, Paragraph } = Typography
 
 export default function Home() {
   return (
     <>
-      <Head title="Homepage" />
+      <Head title="Magic Inventory - Accueil" />
 
       <div className="fixed xl:absolute left-8 right-8 top-0 bottom-0 xl:inset-0 max-w-screen-xl mx-auto before:content-[''] before:[background:repeating-linear-gradient(0deg,var(--sand-5)_0_4px,transparent_0_8px)] before:absolute before:top-0 before:left-0 before:h-full before:w-px after:content-[''] after:[background:repeating-linear-gradient(0deg,var(--sand-5)_0_4px,transparent_0_8px)] after:absolute after:top-0 after:right-0 after:h-full after:w-px"></div>
 
       <div className="pt-4 h-full flex flex-col">
         {/* Header */}
         <div className="grow pb-4 bg-gradient-to-b from-sand-1 to-sand-2 flex justify-center items-center">
-          <a href="https://adonisjs.com" target="_blank" className="isolate">
-            <svg className="w-16 h-16 fill-primary" viewBox="0 0 33 33">
-              <path
-                fillRule="evenodd"
-                d="M0 16.333c0 13.173 3.16 16.333 16.333 16.333 13.173 0 16.333-3.16 16.333-16.333C32.666 3.16 29.506 0 16.333 0 3.16 0 0 3.16 0 16.333Zm6.586 3.393L11.71 8.083c.865-1.962 2.528-3.027 4.624-3.027 2.096 0 3.759 1.065 4.624 3.027l5.123 11.643c.233.566.432 1.297.432 1.93 0 2.893-2.029 4.923-4.923 4.923-.986 0-1.769-.252-2.561-.506-.812-.261-1.634-.526-2.695-.526-1.048 0-1.89.267-2.718.529-.801.253-1.59.503-2.538.503-2.894 0-4.923-2.03-4.923-4.924 0-.632.2-1.363.432-1.929Zm9.747-9.613-5.056 11.443c1.497-.699 3.227-1.032 5.056-1.032 1.763 0 3.56.333 4.99 1.032l-4.99-11.444Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </a>
+          <div className="text-center space-y-6">
+            <Title level={1}>Bienvenue sur Magic Inventory</Title>
+            <Paragraph className="text-lg">
+              Votre assistant de gestion d'inventaire pour artistes de magie
+            </Paragraph>
+            <div className="flex gap-4 justify-center mt-8">
+              <Link href="/login">
+                <Button type="primary" size="large">
+                  Se connecter
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="large">
+                  S'inscrire
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Bento with documentation, Adocasts, packages and Discord */}

@@ -1,6 +1,6 @@
 # Story 1.1: Initialisation du Projet et Configuration de Base
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -88,20 +88,20 @@ So that **l'environnement de développement est prêt avec l'authentification de
 ### Review Follow-ups (AI)
 
 #### 🔴 CRITICAL
-- [ ] [AI-Review][CRITICAL] Ajouter @ant-design/icons aux dépendances package.json - les imports dans register.tsx:3 et login.tsx:3 vont planter au runtime
-- [ ] [AI-Review][CRITICAL] Implémenter validation serveur VineJS dans AuthController - actuellement aucune validation des données utilisateur (violation OWASP) [app/controllers/auth_controller.ts:15-27]
+- [x] [AI-Review][CRITICAL] Ajouter @ant-design/icons aux dépendances package.json - les imports dans register.tsx:3 et login.tsx:3 vont planter au runtime
+- [x] [AI-Review][CRITICAL] Implémenter validation serveur VineJS dans AuthController - actuellement aucune validation des données utilisateur (violation OWASP) [app/controllers/auth_controller.ts:15-27]
 
 #### 🟡 MEDIUM
-- [ ] [AI-Review][MEDIUM] Créer au moins un test unitaire frontend pour valider la configuration Vitest [inertia/test/]
-- [ ] [AI-Review][MEDIUM] Corriger .env.example pour correspondre à docker-compose.yml (DB_USER=postgres, DB_PASSWORD=postgres, DB_DATABASE=magic_inventory)
-- [ ] [AI-Review][MEDIUM] Remplacer `<a href>` par `<Link>` d'Inertia dans register.tsx:93 et login.tsx:77 pour navigation SPA
-- [ ] [AI-Review][MEDIUM] Ajouter gestion d'erreurs aux formulaires auth (onError callback pour afficher les erreurs serveur) [register.tsx:10-12, login.tsx:10-12]
-- [ ] [AI-Review][MEDIUM] Personnaliser la page d'accueil home.tsx avec liens vers /login et /register
+- [x] [AI-Review][MEDIUM] Créer au moins un test unitaire frontend pour valider la configuration Vitest [inertia/test/]
+- [x] [AI-Review][MEDIUM] Corriger .env.example pour correspondre à docker-compose.yml (DB_USER=postgres, DB_PASSWORD=postgres, DB_DATABASE=magic_inventory)
+- [x] [AI-Review][MEDIUM] Remplacer `<a href>` par `<Link>` d'Inertia dans register.tsx:93 et login.tsx:77 pour navigation SPA
+- [x] [AI-Review][MEDIUM] Ajouter gestion d'erreurs aux formulaires auth (onError callback pour afficher les erreurs serveur) [register.tsx:10-12, login.tsx:10-12]
+- [x] [AI-Review][MEDIUM] Personnaliser la page d'accueil home.tsx avec liens vers /login et /register
 
 #### 🟢 LOW
-- [ ] [AI-Review][LOW] Typer correctement `values` dans onFinish au lieu de `any` [register.tsx:10, login.tsx:10]
-- [ ] [AI-Review][LOW] Ajouter champ "Confirmer le mot de passe" au formulaire d'inscription [register.tsx]
-- [ ] [AI-Review][LOW] Remplacer CSS inline par tokens Ant Design dans les pages auth [register.tsx:15-21, login.tsx:14-20]
+- [x] [AI-Review][LOW] Typer correctement `values` dans onFinish au lieu de `any` [register.tsx:10, login.tsx:10]
+- [x] [AI-Review][LOW] Ajouter champ "Confirmer le mot de passe" au formulaire d'inscription [register.tsx]
+- [x] [AI-Review][LOW] Remplacer CSS inline par tokens Ant Design dans les pages auth [register.tsx:15-21, login.tsx:14-20]
 
 ## Dev Notes
 
@@ -395,22 +395,40 @@ Aucune difficulté technique majeure. Note: le shell snapshot de Claude Code ava
 ✅ Serveur démarre correctement sur http://localhost:3333
 ✅ HMR (Hot Module Replacement) fonctionnel
 
+**Review Follow-ups Completed (2026-02-03):**
+✅ Résolu 10 findings de code review (2 CRITICAL, 5 MEDIUM, 3 LOW)
+✅ Validation serveur VineJS implémentée (sécurité OWASP)
+✅ Tests frontend Vitest validés avec 3 tests passants
+✅ Navigation SPA avec Link d'Inertia au lieu de <a href>
+✅ Gestion d'erreurs serveur dans formulaires auth
+✅ Page d'accueil personnalisée avec liens auth
+✅ Typage TypeScript strict pour formulaires
+✅ Champ confirmation mot de passe ajouté
+✅ Tokens Ant Design utilisés au lieu de CSS inline
+
 ### File List
 
 **Fichiers créés:**
 - `docker-compose.yml` - Configuration PostgreSQL 16-alpine
 - `vitest.config.ts` - Configuration Vitest avec plugin React
 - `inertia/test/setup.ts` - Setup tests avec @testing-library/react
-- `app/controllers/auth_controller.ts` - Contrôleur d'authentification
-- `inertia/pages/auth/register.tsx` - Page d'inscription avec formulaire Ant Design
-- `inertia/pages/auth/login.tsx` - Page de connexion avec formulaire Ant Design
+- `inertia/test/setup.test.tsx` - Tests de validation configuration Vitest
+- `inertia/test/vitest.d.ts` - Déclarations TypeScript pour matchers @testing-library/jest-dom
+- `app/controllers/auth_controller.ts` - Contrôleur d'authentification avec validation VineJS, flash messages, error handling
+- `app/validators/auth_validator.ts` - Validators VineJS pour inscription et connexion avec confirmation mot de passe
+- `inertia/pages/auth/register.tsx` - Page d'inscription avec formulaire Ant Design, validation complète (regex password), typage strict, gestion erreurs
+- `inertia/pages/auth/login.tsx` - Page de connexion avec formulaire Ant Design, typage strict, gestion erreurs
 
 **Fichiers modifiés:**
-- `package.json` - Ajout scripts docker:db, test:front, test:front:ui + nom corrigé
+- `package.json` - Ajout scripts docker:db, test:front, test:front:ui + @ant-design/icons installé
 - `.env` - Variables DB PostgreSQL (DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE)
+- `.env.example` - Variables DB corrigées pour correspondre à docker-compose.yml
 - `inertia/app/app.tsx` - Configuration Ant Design ConfigProvider avec thème et locale frFR
+- `inertia/pages/home.tsx` - Page d'accueil personnalisée avec liens /login et /register
 - `start/routes.ts` - Routes d'authentification (/register, /login, /logout) avec middleware
 
 ## Change Log
 
 - **2026-02-03**: Story complétée - Projet AdonisJS initialisé avec toutes les configurations de base (PostgreSQL, Ant Design, Vitest) et pages d'authentification fonctionnelles
+- **2026-02-03**: Addressed code review findings - 10 items resolved (2 CRITICAL: validation VineJS + dépendances, 5 MEDIUM: tests + config + navigation SPA + gestion erreurs + page accueil, 3 LOW: typage + confirmation password + tokens Ant Design)
+- **2026-02-03**: Code review #2 - Fixed 5 issues (1 HIGH: passwordConfirmation validation serveur, 4 MEDIUM: File List vitest.d.ts, validation password regex client/serveur mismatch, flash messages AuthController, error handling try/catch + logging)

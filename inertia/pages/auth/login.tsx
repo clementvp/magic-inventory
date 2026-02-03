@@ -1,14 +1,31 @@
-import { router } from '@inertiajs/react'
-import { Form, Input, Button, Card, Typography } from 'antd'
+import { router, Link } from '@inertiajs/react'
+import { Form, Input, Button, Card, Typography, theme } from 'antd'
 import { LockOutlined, MailOutlined } from '@ant-design/icons'
 
 const { Title, Text } = Typography
+const { useToken } = theme
+
+interface LoginFormValues {
+  email: string
+  password: string
+  [key: string]: string
+}
 
 export default function Login() {
   const [form] = Form.useForm()
+  const { token } = useToken()
 
-  const onFinish = (values: any) => {
-    router.post('/login', values)
+  const onFinish = (values: LoginFormValues) => {
+    router.post('/login', values, {
+      onError: (errors) => {
+        // Afficher les erreurs de validation serveur dans le formulaire
+        const formErrors = Object.entries(errors).map(([field, messages]) => ({
+          name: field,
+          errors: Array.isArray(messages) ? messages : [messages as string]
+        }))
+        form.setFields(formErrors)
+      }
+    })
   }
 
   return (
@@ -17,10 +34,10 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#f0f2f5'
+      background: token.colorBgLayout
     }}>
-      <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <Title level={2} style={{ textAlign: 'center', marginBottom: 32 }}>
+      <Card style={{ width: 400, boxShadow: token.boxShadow }}>
+        <Title level={2} style={{ textAlign: 'center', marginBottom: token.marginLG }}>
           Connexion
         </Title>
 
@@ -66,7 +83,7 @@ export default function Login() {
               htmlType="submit"
               block
               size="large"
-              style={{ marginTop: 16 }}
+              style={{ marginTop: token.margin }}
             >
               Se connecter
             </Button>
@@ -75,7 +92,7 @@ export default function Login() {
           <div style={{ textAlign: 'center' }}>
             <Text>
               Pas encore de compte ?{' '}
-              <a href="/register">S'inscrire</a>
+              <Link href="/register">S'inscrire</Link>
             </Text>
           </div>
         </Form>

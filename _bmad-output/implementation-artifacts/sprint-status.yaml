@@ -42,8 +42,8 @@ story_location: /Users/clement/Desktop/magic-inventory/_bmad-output/implementati
 development_status:
   # Epic 1: Authentification et Accès Sécurisé
   epic-1: in-progress
-  1-1-initialisation-du-projet-et-configuration-de-base: in-progress
-  1-2-layout-de-base-et-navigation: backlog
+  1-1-initialisation-du-projet-et-configuration-de-base: done
+  1-2-layout-de-base-et-navigation: ready-for-dev
   1-3-personnalisation-des-pages-dauthentification: backlog
   1-4-gestion-du-profil-utilisateur: backlog
   1-5-suppression-de-compte-rgpd: backlog

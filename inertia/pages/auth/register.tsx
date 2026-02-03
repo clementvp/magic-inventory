@@ -1,14 +1,32 @@
-import { router } from '@inertiajs/react'
-import { Form, Input, Button, Card, Typography } from 'antd'
+import { router, Link } from '@inertiajs/react'
+import { Form, Input, Button, Card, Typography, theme } from 'antd'
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
 
 const { Title, Text } = Typography
+const { useToken } = theme
+
+interface RegisterFormValues {
+  fullName: string
+  email: string
+  password: string
+  [key: string]: string
+}
 
 export default function Register() {
   const [form] = Form.useForm()
+  const { token } = useToken()
 
-  const onFinish = (values: any) => {
-    router.post('/register', values)
+  const onFinish = (values: RegisterFormValues) => {
+    router.post('/register', values, {
+      onError: (errors) => {
+        // Afficher les erreurs de validation serveur dans le formulaire
+        const formErrors = Object.entries(errors).map(([field, messages]) => ({
+          name: field,
+          errors: Array.isArray(messages) ? messages : [messages as string]
+        }))
+        form.setFields(formErrors)
+      }
+    })
   }
 
   return (
@@ -17,10 +35,10 @@ export default function Register() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#f0f2f5'
+      background: token.colorBgLayout
     }}>
-      <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <Title level={2} style={{ textAlign: 'center', marginBottom: 32 }}>
+      <Card style={{ width: 400, boxShadow: token.boxShadow }}>
+        <Title level={2} style={{ textAlign: 'center', marginBottom: token.marginLG }}>
           Inscription
         </Title>
 
@@ -65,12 +83,39 @@ export default function Register() {
             label="Mot de passe"
             rules={[
               { required: true, message: 'Veuillez saisir votre mot de passe' },
-              { min: 8, message: 'Le mot de passe doit contenir au moins 8 caractères' }
+              { min: 8, message: 'Le mot de passe doit contenir au moins 8 caractères' },
+              {
+                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                message: 'Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre'
+              }
             ]}
           >
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="Mot de passe"
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="passwordConfirmation"
+            label="Confirmer le mot de passe"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Veuillez confirmer votre mot de passe' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('Les mots de passe ne correspondent pas'))
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Confirmer le mot de passe"
               size="large"
             />
           </Form.Item>
@@ -81,7 +126,7 @@ export default function Register() {
               htmlType="submit"
               block
               size="large"
-              style={{ marginTop: 16 }}
+              style={{ marginTop: token.margin }}
             >
               S'inscrire
             </Button>
@@ -90,7 +135,7 @@ export default function Register() {
           <div style={{ textAlign: 'center' }}>
             <Text>
               Déjà un compte ?{' '}
-              <a href="/login">Se connecter</a>
+              <Link href="/login">Se connecter</Link>
             </Text>
           </div>
         </Form>
