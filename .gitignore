@@ -1,34 +1,25 @@
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
+# Dependencies and AdonisJS build
+node_modules
+build
+tmp
 
-# Claude configuration
-.claude/
-
-# BMAD files
-_bmad/
-
-# Dependencies
-node_modules/
-vendor/
-
-# Environment variables
+# Secrets
 .env
 .env.local
-.env.*.local
+.env.production.local
+.env.development.local
 
-# Build outputs
-dist/
-build/
-*.log
+# Frontend assets compiled code
+public/assets
 
-# OS files
+# Build tools specific
+npm-debug.log
+yarn-error.log
+
+# Editors specific
+.fleet
+.idea
+.vscode
+
+# Platform specific
 .DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
