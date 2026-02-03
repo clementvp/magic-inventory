@@ -1118,6 +1118,7 @@ magic-inventory/
 │
 ├── app/                                  # Backend AdonisJS
 │   ├── controllers/
+│   │   ├── home_controller.ts            # Landing page publique
 │   │   ├── auth_controller.ts            # FR1-6: Login, register, logout
 │   │   ├── materials_controller.ts       # FR7-15: CRUD matériel
 │   │   ├── storage_locations_controller.ts  # FR16-20: CRUD lieux
@@ -1330,6 +1331,9 @@ magic-inventory/
 Routes RESTful (toutes protégées par middleware `auth` sauf auth routes) :
 
 ```typescript
+// Route racine publique (landing page)
+Route.get('/', 'HomeController.index')  // Page d'accueil publique
+
 // Routes publiques (auth)
 Route.get('/login', 'AuthController.showLogin')
 Route.post('/login', 'AuthController.login')

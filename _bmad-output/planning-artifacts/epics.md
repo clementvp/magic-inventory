@@ -341,13 +341,50 @@ So that **l'environnement de développement est prêt avec l'authentification de
 **And** les pages register, login, logout de base fonctionnent
 **And** le HMR (Hot Module Replacement) fonctionne
 
-### Story 1.2: Layout de Base et Navigation
+### Story 1.2: Page d'Accueil Publique, Layout et Navigation
 
 As a **utilisateur**,
-I want **une interface claire avec navigation sidebar et breadcrumbs**,
-So that **je peux naviguer facilement dans l'application**.
+I want **une page d'accueil publique claire et une interface avec navigation sidebar et breadcrumbs**,
+So that **les visiteurs peuvent découvrir magic-inventory et je peux naviguer facilement dans l'application**.
 
 **Acceptance Criteria:**
+
+**Section 1 : Page d'Accueil Publique (Landing Page)**
+
+**Given** je suis un visiteur non-connecté
+**When** j'accède à la route racine (/)
+**Then** je vois la page d'accueil publique de magic-inventory
+**And** je vois le nom de l'application "magic-inventory"
+**And** je vois un sous-titre ou slogan ("Organisez la magie")
+**And** je vois une description brève de l'application (1-2 phrases maximum)
+
+**Given** je suis sur la page d'accueil publique
+**When** je vois les boutons d'action
+**Then** je vois un bouton primaire "S'inscrire" (type primary, colorPrimary #1890ff)
+**And** je vois un bouton secondaire "Se connecter" (type default, gris)
+**And** les boutons sont bien visibles et clairement identifiables
+
+**Given** je clique sur "S'inscrire"
+**When** le bouton est cliqué
+**Then** je suis redirigé vers /register (Story 1-3)
+
+**Given** je clique sur "Se connecter"
+**When** le bouton est cliqué
+**Then** je suis redirigé vers /login (Story 1-3)
+
+**Given** je suis un utilisateur déjà connecté
+**When** j'accède à la route racine (/)
+**Then** je suis redirigé automatiquement vers /dashboard
+**And** je ne vois pas la landing page publique
+
+**Given** la page d'accueil publique est affichée
+**When** j'examine le design
+**Then** l'interface utilise le design system Ant Design avec tokens personnalisés
+**And** les espaces blancs sont généreux (Apple-inspired)
+**And** la hiérarchie typographique est claire
+**And** l'interface est sobre et professionnelle (Built for Pros)
+
+**Section 2 : Layout de Base et Navigation (Utilisateurs Connectés)**
 
 **Given** le projet est initialisé
 **When** je crée le Layout de base avec Ant Design

@@ -49,7 +49,8 @@ export default class AuthController {
     const data = await request.validateUsing(loginValidator)
 
     try {
-      await auth.use('web').attempt(data.email, data.password)
+      const user = await User.verifyCredentials(data.email, data.password)
+      await auth.use('web').login(user)
 
       session.flash('success', 'Connexion réussie ! Bon retour sur Magic Inventory.')
       return response.redirect('/')

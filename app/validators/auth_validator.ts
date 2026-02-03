@@ -23,12 +23,10 @@ export const registerValidator = vine.compile(
       .string()
       .minLength(8)
       .maxLength(255)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-        message: 'Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre'
-      }),
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
     passwordConfirmation: vine
       .string()
-      .confirmed({ confirmationField: 'password' })
+      .confirmed()
   })
 )
 
