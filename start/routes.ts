@@ -11,9 +11,11 @@ import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 
 const AuthController = () => import('#controllers/auth_controller')
+const HomeController = () => import('#controllers/home_controller')
+const DashboardController = () => import('#controllers/dashboard_controller')
 
-// Page d'accueil
-router.on('/').renderInertia('home')
+// Page d'accueil publique avec redirection intelligente
+router.get('/', [HomeController, 'index']).as('home')
 
 // Routes d'authentification (accessible uniquement aux invités)
 router
@@ -25,8 +27,11 @@ router
   })
   .use(middleware.guest())
 
-// Déconnexion (accessible uniquement aux utilisateurs connectés)
+// Routes protégées (accessible uniquement aux utilisateurs connectés)
 router
-  .post('/logout', [AuthController, 'logout'])
+  .group(() => {
+    router.get('/dashboard', [DashboardController, 'index']).as('dashboard')
+    router.post('/logout', [AuthController, 'logout'])
+  })
   .use(middleware.auth())
 
