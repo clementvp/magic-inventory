@@ -125,9 +125,8 @@ export default function Layout({ children }: LayoutProps) {
           <Search
             placeholder="Rechercher... (Cmd+K ou Ctrl+K)"
             style={{ width: 300 }}
-            onSearch={(value) => {
+            onSearch={() => {
               // Structure uniquement - logique de recherche à implémenter en Epic 3
-              console.log('Search:', value)
             }}
           />
         </Header>

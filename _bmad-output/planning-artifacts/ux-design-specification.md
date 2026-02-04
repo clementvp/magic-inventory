@@ -77,6 +77,18 @@ magic-inventory repose sur **3 grands axes d'interaction** :
 - **Contexte :** Chez soi, préparation tranquille de spectacles et routines
 - **Connectivité :** En ligne (pas d'offline nécessaire)
 
+**Landing page publique (visiteurs non-connectés) :**
+- **Page d'accueil (`/`)** : Point d'entrée pour nouveaux visiteurs
+- **Présentation value proposition** : "magic-inventory - Organisez la magie"
+- **Description brève** : Centraliser inventaire, routines et spectacles (1-2 phrases)
+- **Call-to-action clair** :
+  - Bouton primaire "S'inscrire" (type primary, bleu #1890ff)
+  - Bouton secondaire "Se connecter" (type default, gris)
+- **Design sobre et professionnel** : Ant Design avec tokens personnalisés (Built for Pros)
+- **Espaces blancs généreux** : Apple-inspired clarity
+- **Layout distinct** : Pas de Sidebar navigation (layout public ≠ layout authentifié)
+- **Redirection intelligente** : Si utilisateur déjà connecté → automatiquement vers /dashboard
+
 **Responsive mobile (bonus MVP) :**
 - Mode "consultation" pour accéder aux routines et checklists en déplacement ou backstage
 - Pas de création complexe sur mobile, mais lecture et validation checklist possibles

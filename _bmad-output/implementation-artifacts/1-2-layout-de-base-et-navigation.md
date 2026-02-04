@@ -1,6 +1,6 @@
 # Story 1.2: Page d'Accueil Publique, Layout et Navigation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -157,7 +157,7 @@ So that **les visiteurs peuvent découvrir magic-inventory et je peux naviguer f
   - [x] Auto-dismiss après 3 secondes (config Ant Design message)
 
 - [x] Appliquer Layout à toutes les pages existantes (AC: 6)
-  - [x] Wrapper pages Auth (Login, Register) avec Layout
+  - [x] Pages Auth (Login, Register) conservent leur design Card centré (décision: layout distinct pour pages publiques)
   - [x] Wrapper page Dashboard avec Layout
   - [x] IMPORTANT: NE PAS wrapper Home/Index.tsx (landing page publique = layout distinct)
   - [x] Tester navigation entre pages
@@ -578,6 +578,12 @@ N/A - Story créée avec analyse exhaustive, prête pour développement
 - ✅ Recherche globale (structure uniquement, logique Epic 3)
 - ⚠️ Note: Pages Auth (Login/Register) conservent leur design Card centré (layout distinct des pages authentifiées)
 
+**Code Review Fixes (2026-02-04):**
+- ✅ Tests Layout.test.tsx: Ajout waitFor() pour éliminer warnings React act(...)
+- ✅ Layout.tsx: Suppression console.log dans onSearch handler (code production)
+- ✅ File List: Ajout architecture.md et ux-design-specification.md dans fichiers modifiés
+- ✅ Tasks: Clarification décision Auth pages (layout distinct vs wrapper Layout)
+
 ### File List
 
 **Fichiers CRÉÉS (Landing Page - Section 1):**
@@ -595,6 +601,8 @@ N/A - Story créée avec analyse exhaustive, prête pour développement
 
 **Fichiers MODIFIÉS:**
 - start/routes.ts (route `/` avec HomeController, route `/dashboard` avec DashboardController, groupe routes protégées)
+- _bmad-output/planning-artifacts/architecture.md (ajustements suite à implémentation)
+- _bmad-output/planning-artifacts/ux-design-specification.md (ajustements suite à implémentation)
 
 **Fichiers NON MODIFIÉS (design établi en Story 1-1):**
 - inertia/pages/auth/login.tsx (conserve design Card centré)

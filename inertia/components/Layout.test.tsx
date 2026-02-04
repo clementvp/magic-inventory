@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import Layout from './Layout'
 
 // Mock Inertia usePage hook
@@ -16,20 +16,22 @@ vi.mock('@inertiajs/react', () => ({
 }))
 
 describe('Layout', () => {
-  it('renders menu items correctly', () => {
+  it('renders menu items correctly', async () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     )
 
-    expect(screen.getByText('Inventaire')).toBeInTheDocument()
-    expect(screen.getByText('Routines')).toBeInTheDocument()
-    expect(screen.getByText('Spectacles')).toBeInTheDocument()
-    expect(screen.getByText('Notes')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Inventaire')).toBeInTheDocument()
+      expect(screen.getByText('Routines')).toBeInTheDocument()
+      expect(screen.getByText('Spectacles')).toBeInTheDocument()
+      expect(screen.getByText('Notes')).toBeInTheDocument()
+    })
   })
 
-  it('renders breadcrumb in header', () => {
+  it('renders breadcrumb in header', async () => {
     render(
       <Layout>
         <div>Content</div>
@@ -37,32 +39,38 @@ describe('Layout', () => {
     )
 
     // Breadcrumb avec "Accueil" devrait être visible (plusieurs instances possibles)
-    expect(screen.getAllByText('Accueil').length).toBeGreaterThan(0)
+    await waitFor(() => {
+      expect(screen.getAllByText('Accueil').length).toBeGreaterThan(0)
+    })
   })
 
-  it('renders search input with correct placeholder', () => {
+  it('renders search input with correct placeholder', async () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     )
 
-    expect(
-      screen.getByPlaceholderText(/Rechercher.*Cmd\+K ou Ctrl\+K/i)
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText(/Rechercher.*Cmd\+K ou Ctrl\+K/i)
+      ).toBeInTheDocument()
+    })
   })
 
-  it('renders children content', () => {
+  it('renders children content', async () => {
     render(
       <Layout>
         <div>Test Content</div>
       </Layout>
     )
 
-    expect(screen.getByText('Test Content')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Test Content')).toBeInTheDocument()
+    })
   })
 
-  it('renders footer with copyright', () => {
+  it('renders footer with copyright', async () => {
     render(
       <Layout>
         <div>Content</div>
@@ -70,12 +78,14 @@ describe('Layout', () => {
     )
 
     const currentYear = new Date().getFullYear()
-    expect(
-      screen.getByText(`magic-inventory ©${currentYear}`)
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.getByText(`magic-inventory ©${currentYear}`)
+      ).toBeInTheDocument()
+    })
   })
 
-  it('renders application name in sidebar', () => {
+  it('renders application name in sidebar', async () => {
     render(
       <Layout>
         <div>Content</div>
@@ -83,6 +93,8 @@ describe('Layout', () => {
     )
 
     // Le nom de l'app devrait être visible dans le Sider
-    expect(screen.getByText('magic-inventory')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('magic-inventory')).toBeInTheDocument()
+    })
   })
 })

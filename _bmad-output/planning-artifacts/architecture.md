@@ -1206,6 +1206,10 @@ magic-inventory/
 │   ├── app.tsx                           # Point d'entrée (ConfigProvider Ant Design)
 │   │
 │   ├── pages/                            # Pages Inertia (routes)
+│   │   ├── Home/
+│   │   │   ├── Index.tsx                 # Landing page publique (/)
+│   │   │   └── Index.test.tsx
+│   │   │
 │   │   ├── Auth/
 │   │   │   ├── Login.tsx                 # FR2: Connexion
 │   │   │   ├── Login.test.tsx
