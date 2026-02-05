@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { router, Link } from '@inertiajs/react'
 import { Form, Input, Button, Card, Typography, theme } from 'antd'
 import { LockOutlined, MailOutlined } from '@ant-design/icons'
@@ -8,23 +9,26 @@ const { useToken } = theme
 interface LoginFormValues {
   email: string
   password: string
-  [key: string]: string
 }
 
 export default function Login() {
   const [form] = Form.useForm()
   const { token } = useToken()
+  const [loading, setLoading] = useState(false)
 
   const onFinish = (values: LoginFormValues) => {
+    setLoading(true)
     router.post('/login', values, {
       onError: (errors) => {
+        setLoading(false)
         // Afficher les erreurs de validation serveur dans le formulaire
         const formErrors = Object.entries(errors).map(([field, messages]) => ({
           name: field,
           errors: Array.isArray(messages) ? messages : [messages as string]
         }))
         form.setFields(formErrors)
-      }
+      },
+      onFinish: () => setLoading(false)
     })
   }
 
@@ -78,12 +82,15 @@ export default function Login() {
           </Form.Item>
 
           <Form.Item>
+            <div style={{ marginBottom: token.marginSM }}>
+              <Link href="#">Mot de passe oublié ?</Link>
+            </div>
             <Button
               type="primary"
               htmlType="submit"
               block
               size="large"
-              style={{ marginTop: token.margin }}
+              loading={loading}
             >
               Se connecter
             </Button>

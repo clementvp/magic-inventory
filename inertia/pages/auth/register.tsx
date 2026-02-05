@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { router, Link } from '@inertiajs/react'
 import { Form, Input, Button, Card, Typography, theme } from 'antd'
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
@@ -9,23 +10,27 @@ interface RegisterFormValues {
   fullName: string
   email: string
   password: string
-  [key: string]: string
+  passwordConfirmation: string
 }
 
 export default function Register() {
   const [form] = Form.useForm()
   const { token } = useToken()
+  const [loading, setLoading] = useState(false)
 
   const onFinish = (values: RegisterFormValues) => {
+    setLoading(true)
     router.post('/register', values, {
       onError: (errors) => {
+        setLoading(false)
         // Afficher les erreurs de validation serveur dans le formulaire
         const formErrors = Object.entries(errors).map(([field, messages]) => ({
           name: field,
           errors: Array.isArray(messages) ? messages : [messages as string]
         }))
         form.setFields(formErrors)
-      }
+      },
+      onFinish: () => setLoading(false)
     })
   }
 
@@ -53,7 +58,9 @@ export default function Register() {
             name="fullName"
             label="Nom complet"
             rules={[
-              { required: true, message: 'Veuillez saisir votre nom complet' }
+              { required: true, message: 'Veuillez saisir votre nom complet' },
+              { min: 2, message: 'Le nom doit contenir au moins 2 caractères' },
+              { max: 255, message: 'Le nom ne peut pas dépasser 255 caractères' }
             ]}
           >
             <Input
@@ -126,6 +133,7 @@ export default function Register() {
               htmlType="submit"
               block
               size="large"
+              loading={loading}
               style={{ marginTop: token.margin }}
             >
               S'inscrire
