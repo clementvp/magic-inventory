@@ -13,6 +13,9 @@ import { middleware } from '#start/kernel'
 const AuthController = () => import('#controllers/auth_controller')
 const HomeController = () => import('#controllers/home_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
+const ProfileController = () => import('#controllers/profile_controller')
+const CategoriesController = () => import('#controllers/categories_controller')
+const TypesController = () => import('#controllers/types_controller')
 
 // Page d'accueil publique avec redirection intelligente
 router.get('/', [HomeController, 'index']).as('home')
@@ -32,6 +35,12 @@ router
   .group(() => {
     router.get('/dashboard', [DashboardController, 'index']).as('dashboard')
     router.post('/logout', [AuthController, 'logout'])
+    router.get('/profile', [ProfileController, 'edit']).as('profile.edit')
+    router.get('/profile/export', [ProfileController, 'export']).as('profile.export')
+    router.post('/profile', [ProfileController, 'update']).as('profile.update')
+    router.delete('/profile', [ProfileController, 'destroy']).as('profile.destroy')
+    router.resource('categories', CategoriesController).only(['index', 'store', 'update', 'destroy'])
+    router.resource('types', TypesController).only(['index', 'store', 'update', 'destroy'])
   })
   .use(middleware.auth())
 
