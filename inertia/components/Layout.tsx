@@ -5,6 +5,9 @@ import {
   CalendarOutlined,
   StarOutlined,
   FileTextOutlined,
+  UserOutlined,
+  TagsOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons'
 import { Link, usePage } from '@inertiajs/react'
 import type { MenuProps } from 'antd'
@@ -23,10 +26,13 @@ export default function Layout({ children }: LayoutProps) {
 
   // Déterminer la clé active du menu basée sur l'URL
   const getSelectedKey = (): string => {
+    if (url.startsWith('/types')) return 'types'
+    if (url.startsWith('/categories')) return 'categories'
     if (url.startsWith('/materials')) return 'materials'
     if (url.startsWith('/routines')) return 'routines'
     if (url.startsWith('/shows')) return 'shows'
     if (url.startsWith('/notes')) return 'notes'
+    if (url.startsWith('/profile')) return 'profile'
     return 'dashboard'
   }
 
@@ -40,11 +46,14 @@ export default function Layout({ children }: LayoutProps) {
     ]
 
     const labelMap: Record<string, string> = {
+      categories: 'Catégories',
+      types: 'Types',
       materials: 'Inventaire',
       routines: 'Routines',
       shows: 'Spectacles',
       notes: 'Notes',
       dashboard: 'Accueil',
+      profile: 'Profil',
     }
 
     segments.forEach((segment, index) => {
@@ -64,6 +73,16 @@ export default function Layout({ children }: LayoutProps) {
 
   const menuItems: MenuProps['items'] = [
     {
+      key: 'categories',
+      icon: <TagsOutlined />,
+      label: <Link href="/categories">Catégories</Link>,
+    },
+    {
+      key: 'types',
+      icon: <UnorderedListOutlined />,
+      label: <Link href="/types">Types</Link>,
+    },
+    {
       key: 'materials',
       icon: <AppstoreOutlined />,
       label: <Link href="/materials">Inventaire</Link>,
@@ -82,6 +101,11 @@ export default function Layout({ children }: LayoutProps) {
       key: 'notes',
       icon: <FileTextOutlined />,
       label: <Link href="/notes">Notes</Link>,
+    },
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <Link href="/profile">Profil</Link>,
     },
   ]
 

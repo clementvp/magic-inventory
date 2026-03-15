@@ -1,7 +1,11 @@
 import User from '#models/user'
+import Category from '#models/category'
+import db from '@adonisjs/lucid/services/db'
 import { HttpContext } from '@adonisjs/core/http'
 import { registerValidator, loginValidator } from '#validators/auth_validator'
 import logger from '@adonisjs/core/services/logger'
+
+const DEFAULT_CATEGORIES = ['Cartomagie', 'Mentalisme', 'Pièces', 'Close-up', 'Scène', 'Enfants']
 
 export default class AuthController {
   /**
@@ -18,10 +22,19 @@ export default class AuthController {
     const data = await request.validateUsing(registerValidator)
 
     try {
-      const user = await User.create({
-        email: data.email,
-        password: data.password,
-        fullName: data.fullName,
+      const user = await db.transaction(async (trx) => {
+        const newUser = await User.create({
+          email: data.email,
+          password: data.password,
+          fullName: data.fullName,
+        }, { client: trx })
+
+        await Category.createMany(
+          DEFAULT_CATEGORIES.map((name) => ({ userId: newUser.id, name })),
+          { client: trx }
+        )
+
+        return newUser
       })
 
       await auth.use('web').login(user)
