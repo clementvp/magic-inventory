@@ -4,6 +4,13 @@ import * as matchers from '@testing-library/jest-dom/matchers'
 
 expect.extend(matchers)
 
+// Mock ResizeObserver for Ant Design popup/overlay components (not available in jsdom)
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // Mock window.matchMedia for Ant Design responsive components
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
