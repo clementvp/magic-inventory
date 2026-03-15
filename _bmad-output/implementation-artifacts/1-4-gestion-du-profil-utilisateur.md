@@ -1,6 +1,6 @@
 # Story 1.4: Gestion du Profil Utilisateur
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -45,51 +45,51 @@ So that **je peux maintenir mes données personnelles à jour** (I can keep my p
 
 ### Backend - Controller et Validators (AC: 1-4)
 
-- [ ] Créer ProfileController (AC: 1, 3, 4)
-  - [ ] Créer `app/controllers/profile_controller.ts`
-  - [ ] Méthode `edit()`:
+- [x] Créer ProfileController (AC: 1, 3, 4)
+  - [x] Créer `app/controllers/profile_controller.ts`
+  - [x] Méthode `edit()`:
     - Charger l'utilisateur authentifié via `auth.user!`
     - Retourner la vue Inertia : `inertia.render('profile/edit', { user })`
-  - [ ] Méthode `update()`:
+  - [x] Méthode `update()`:
     - Valider avec `updateProfileValidator`
     - Mettre à jour User avec `user.email = data.email; user.fullName = data.fullName; await user.save()`
     - Flash success: "Profil mis à jour avec succès"
     - Rediriger vers `/profile`
     - Gestion d'erreurs avec try-catch, logger, flash error messages français
 
-- [ ] Créer validators Vine pour profile (AC: 2, 4)
-  - [ ] Créer `app/validators/profile_validator.ts`
-  - [ ] Implémenter `updateProfileValidator` avec règles:
+- [x] Créer validators Vine pour profile (AC: 2, 4)
+  - [x] Créer `app/validators/profile_validator.ts`
+  - [x] Implémenter `updateProfileValidator` avec règles:
     - fullName: string, trim, min 2, max 255
     - email: string, trim, email, normalizeEmail, unique en DB (IMPORTANT: exclure l'utilisateur courant via whereNot)
-  - [ ] Tous les messages d'erreur en français avec SimpleMessagesProvider
+  - [x] Tous les messages d'erreur en français avec SimpleMessagesProvider
 
-- [ ] Configurer routes pour profil (AC: 1, 3)
-  - [ ] Modifier `start/routes.ts`
-  - [ ] Groupe routes protégées (auth middleware):
+- [x] Configurer routes pour profil (AC: 1, 3)
+  - [x] Modifier `start/routes.ts`
+  - [x] Groupe routes protégées (auth middleware):
     - GET /profile → ProfileController.edit
     - POST /profile → ProfileController.update
-  - [ ] Middleware `auth()` redirige users non-connectés vers `/login`
+  - [x] Middleware `auth()` redirige users non-connectés vers `/login`
 
 ### Frontend - Page Profile Edit (AC: 1, 2, 3, 4)
 
-- [ ] Créer page Profile Edit (AC: 1, 2)
-  - [ ] Créer `inertia/pages/profile/edit.tsx`
-  - [ ] Utiliser Layout component (avec breadcrumb "Accueil > Profil")
-  - [ ] Structure: Card avec Form Ant Design layout="vertical"
-  - [ ] Champs requis:
+- [x] Créer page Profile Edit (AC: 1, 2)
+  - [x] Créer `inertia/pages/profile/edit.tsx`
+  - [x] Utiliser Layout component (avec breadcrumb "Accueil > Profil")
+  - [x] Structure: Card avec Form Ant Design layout="vertical"
+  - [x] Champs requis:
     - Full Name: Label "Nom complet", placeholder "Votre nom complet", pré-rempli avec `user.fullName`
     - Email: Label "Email", placeholder "votre@email.com", pré-rempli avec `user.email`
-  - [ ] Validation client (Ant Design Form rules):
+  - [x] Validation client (Ant Design Form rules):
     - fullName: required "Veuillez saisir votre nom complet", min 2, max 255
     - email: required "Veuillez saisir votre email", type email "Email invalide"
-  - [ ] Bouton submit: type="primary", size="large", text "Enregistrer", loading state
-  - [ ] Titre page: Typography.Title level={2} "Mon Profil"
-  - [ ] Form submission via router.post('/profile', values) avec error handling
-  - [ ] Appliquer tokens Ant Design: padding, margin, colorPrimary #1890ff
+  - [x] Bouton submit: type="primary", size="large", text "Enregistrer", loading state
+  - [x] Titre page: Typography.Title level={2} "Mon Profil"
+  - [x] Form submission via router.post('/profile', values) avec error handling
+  - [x] Appliquer tokens Ant Design: padding, margin, colorPrimary #1890ff
 
-- [ ] Gestion erreurs serveur (AC: 4)
-  - [ ] Pattern error handling dans onFinish:
+- [x] Gestion erreurs serveur (AC: 4)
+  - [x] Pattern error handling dans onFinish:
     ```typescript
     router.post('/profile', values, {
       onError: (errors) => {
@@ -101,25 +101,25 @@ So that **je peux maintenir mes données personnelles à jour** (I can keep my p
       }
     })
     ```
-  - [ ] Afficher erreurs inline sur champs concernés (Ant Design Form.Item)
-  - [ ] Messages en français (venant du validator backend)
+  - [x] Afficher erreurs inline sur champs concernés (Ant Design Form.Item)
+  - [x] Messages en français (venant du validator backend)
 
-- [ ] Ajouter lien vers Profile dans navigation (AC: 1)
-  - [ ] Modifier `inertia/components/Layout.tsx`
-  - [ ] Ajouter menu item "Profil" dans Sidebar avec icon UserOutlined
-  - [ ] Lien vers `/profile` avec Link Inertia
+- [x] Ajouter lien vers Profile dans navigation (AC: 1)
+  - [x] Modifier `inertia/components/Layout.tsx`
+  - [x] Ajouter menu item "Profil" dans Sidebar avec icon UserOutlined
+  - [x] Lien vers `/profile` avec Link Inertia
 
 ### Tests (AC: Tous)
 
-- [ ] Tests unitaires page Profile Edit (AC: 1, 2, 3, 4)
-  - [ ] Créer `inertia/pages/profile/edit.test.tsx`
-  - [ ] Test: Render champs Nom complet et Email pré-remplis
-  - [ ] Test: Bouton "Enregistrer" présent avec type primary
-  - [ ] Test: Validation client - nom < 2 chars affiche message erreur
-  - [ ] Test: Validation client - email invalide affiche "Email invalide"
-  - [ ] Test: Form submission avec données valides
-  - [ ] Test: Error handling - duplicate email affiche "Cet email est déjà utilisé"
-  - [ ] Mock router.post pour tester soumission
+- [x] Tests unitaires page Profile Edit (AC: 1, 2, 3, 4)
+  - [x] Créer `inertia/pages/profile/edit.test.tsx`
+  - [x] Test: Render champs Nom complet et Email pré-remplis
+  - [x] Test: Bouton "Enregistrer" présent avec type primary
+  - [x] Test: Validation client - nom < 2 chars affiche message erreur
+  - [x] Test: Validation client - email invalide affiche "Email invalide"
+  - [x] Test: Form submission avec données valides
+  - [x] Test: Error handling - duplicate email affiche "Cet email est déjà utilisé"
+  - [x] Mock router.post pour tester soumission
 
 - [ ] Tests backend (optionnel mais recommandé)
   - [ ] Tests fonctionnels profile update:
@@ -131,25 +131,25 @@ So that **je peux maintenir mes données personnelles à jour** (I can keep my p
 
 ### Validation Finale (AC: Tous)
 
-- [ ] Tester flow complet Profile Update
-  - [ ] Se connecter avec un compte existant
-  - [ ] Accéder à /profile via navigation ou URL
-  - [ ] Modifier le nom complet et sauvegarder
-  - [ ] Vérifier flash message "Profil mis à jour avec succès"
-  - [ ] Vérifier que le nom est mis à jour dans la page
-  - [ ] Modifier l'email avec un email déjà utilisé
-  - [ ] Vérifier message erreur "Cet email est déjà utilisé"
-  - [ ] Modifier l'email avec un email valide et unique
-  - [ ] Vérifier que l'email est mis à jour
+- [x] Tester flow complet Profile Update
+  - [x] Se connecter avec un compte existant
+  - [x] Accéder à /profile via navigation ou URL
+  - [x] Modifier le nom complet et sauvegarder
+  - [x] Vérifier flash message "Profil mis à jour avec succès"
+  - [x] Vérifier que le nom est mis à jour dans la page
+  - [x] Modifier l'email avec un email déjà utilisé
+  - [x] Vérifier message erreur "Cet email est déjà utilisé"
+  - [x] Modifier l'email avec un email valide et unique
+  - [x] Vérifier que l'email est mis à jour
 
-- [ ] Vérifier sécurité (AC: 1, 3)
-  - [ ] User ne peut modifier QUE son propre profil (auth.user.id)
-  - [ ] Middleware auth protège /profile
-  - [ ] Email uniqueness vérifié côté serveur (exclude current user)
-  - [ ] CSRF protection automatique (Inertia)
+- [x] Vérifier sécurité (AC: 1, 3)
+  - [x] User ne peut modifier QUE son propre profil (auth.user.id)
+  - [x] Middleware auth protège /profile
+  - [x] Email uniqueness vérifié côté serveur (exclude current user)
+  - [x] CSRF protection automatique (Inertia)
 
-- [ ] Lancer tous les tests (AC: Tous)
-  - [ ] `npm run test:front` - tous les tests passent
+- [x] Lancer tous les tests (AC: Tous)
+  - [x] `npm run test:front` - tous les tests passent (52/52 ✅)
   - [ ] `node ace test` - tests backend passent (optionnels)
 
 ## Dev Notes
@@ -660,11 +660,14 @@ start/
 
 ### Agent Model Used
 
-Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+Claude Sonnet 4.6 (claude-sonnet-4-6)
 
 ### Debug Log References
 
-N/A - Story créée avec analyse exhaustive via subagents, prête pour développement
+- Fix: vitest.config.ts manquait l'alias `~/` → ajout de `resolve.alias` pour aligner avec vite.config.ts
+- Fix (code review): `request.validateUsing` déplacé hors du try-catch dans ProfileController.update() — ValidationExceptions propagent correctement vers Inertia (AC Scenario 4)
+- Fix (code review): `FieldContext` typé explicitement dans profile_validator.ts + `userId` casté en `number`
+- Fix (code review): `React.ReactNode` remplacé par `import type { ReactNode }` dans edit.test.tsx
 
 ### Completion Notes List
 
@@ -681,22 +684,31 @@ N/A - Story créée avec analyse exhaustive via subagents, prête pour développ
 - ✅ Tasks/subtasks détaillées (4 tâches principales, ~25 subtasks)
 - ✅ Dev Notes exhaustives pour prévenir erreurs de développement
 - ✅ CRITICAL patterns documentés: email uniqueness avec whereNot, profile scoping, form pre-fill
-- ✅ Ultimate context engine analysis completed - comprehensive developer guide created
+
+**Phase Implémentation (2026-03-08):**
+- ✅ `app/validators/profile_validator.ts` : updateProfileValidator avec VineJS, email uniqueness excluant l'utilisateur courant via `field.meta.userId`, messages français via SimpleMessagesProvider
+- ✅ `app/controllers/profile_controller.ts` : edit() + update() avec try-catch, flash messages français, redirect
+- ✅ `start/routes.ts` : routes GET/POST /profile dans groupe auth middleware
+- ✅ `inertia/pages/profile/edit.tsx` : page avec Layout, Form Ant Design pré-rempli, validation client, loading state, error handling serveur via onError + form.setFields()
+- ✅ `inertia/components/Layout.tsx` : ajout menu item "Profil" avec UserOutlined, lien /profile, breadcrumb "profile" → "Profil"
+- ✅ `vitest.config.ts` : ajout alias `~/` pour résoudre les imports dans les tests
+- ✅ `inertia/pages/profile/edit.test.tsx` : 11 tests couvrant render, pre-fill, validation, soumission, erreurs serveur, fullName null
+- ✅ 52/52 tests passent (0 régression)
 
 ### File List
 
-**Fichiers à CRÉER:**
-- app/controllers/profile_controller.ts (edit, update methods)
-- app/validators/profile_validator.ts (updateProfileValidator avec email uniqueness)
-- inertia/pages/profile/edit.tsx (form pré-rempli avec Layout)
-- inertia/pages/profile/edit.test.tsx (tests unitaires)
+**Fichiers CRÉÉS:**
+- app/controllers/profile_controller.ts
+- app/validators/profile_validator.ts
+- inertia/pages/profile/edit.tsx
+- inertia/pages/profile/edit.test.tsx
 
-**Fichiers à MODIFIER:**
-- start/routes.ts (ajouter routes GET/POST /profile avec middleware auth)
-- inertia/components/Layout.tsx (ajouter menu item "Profil" dans Sidebar)
+**Fichiers MODIFIÉS:**
+- start/routes.ts (ajout routes GET/POST /profile avec middleware auth)
+- inertia/components/Layout.tsx (ajout menu item Profil + breadcrumb label)
+- vitest.config.ts (ajout resolve.alias pour `~/`)
 
-**Fichiers EXISTANTS (ne pas toucher):**
-- app/models/user.ts (model User déjà configuré)
-- database/migrations/*_create_users_table.ts (table users déjà créée)
-- inertia/app/app.tsx (ConfigProvider Ant Design)
-- inertia/components/FlashMessages.tsx (flash messages component)
+### Change Log
+
+- 2026-03-08: Implémentation Story 1.4 — système de gestion du profil utilisateur (ProfileController, updateProfileValidator, page profile/edit, navigation, tests)
+- 2026-03-08: Code review — 5 issues corrigées (H1: validation hors try-catch, H2: résolu par H1, M1: FieldContext typé, M2: import ReactNode, M3: résolu par H1)
