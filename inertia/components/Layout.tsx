@@ -8,6 +8,7 @@ import {
   UserOutlined,
   TagsOutlined,
   UnorderedListOutlined,
+  InboxOutlined,
 } from '@ant-design/icons'
 import { Link, usePage } from '@inertiajs/react'
 import type { MenuProps } from 'antd'
@@ -18,14 +19,16 @@ const { Search } = Input
 
 interface LayoutProps {
   children: ReactNode
+  title?: string
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, title }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const { url } = usePage()
 
   // Déterminer la clé active du menu basée sur l'URL
   const getSelectedKey = (): string => {
+    if (url.startsWith('/storage-locations')) return 'storage-locations'
     if (url.startsWith('/types')) return 'types'
     if (url.startsWith('/categories')) return 'categories'
     if (url.startsWith('/materials')) return 'materials'
@@ -48,6 +51,7 @@ export default function Layout({ children }: LayoutProps) {
     const labelMap: Record<string, string> = {
       categories: 'Catégories',
       types: 'Types',
+      'storage-locations': 'Lieux de Stockage',
       materials: 'Inventaire',
       routines: 'Routines',
       shows: 'Spectacles',
@@ -57,11 +61,12 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     segments.forEach((segment, index) => {
-      const label = labelMap[segment] || segment
+      const isLast = index === segments.length - 1
+      const label = isLast && title ? title : (labelMap[segment] || segment)
       const path = '/' + segments.slice(0, index + 1).join('/')
 
       // Dernier segment non cliquable
-      if (index === segments.length - 1) {
+      if (isLast) {
         items.push({ title: label })
       } else {
         items.push({ title: <Link href={path}>{label}</Link> })
@@ -81,6 +86,11 @@ export default function Layout({ children }: LayoutProps) {
       key: 'types',
       icon: <UnorderedListOutlined />,
       label: <Link href="/types">Types</Link>,
+    },
+    {
+      key: 'storage-locations',
+      icon: <InboxOutlined />,
+      label: <Link href="/storage-locations">Lieux de Stockage</Link>,
     },
     {
       key: 'materials',

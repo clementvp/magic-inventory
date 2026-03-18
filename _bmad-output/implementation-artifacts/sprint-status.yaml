@@ -54,8 +54,8 @@ development_status:
   epic-2: in-progress
   2-1-gestion-des-categories-avec-categories-par-defaut: done
   2-2-gestion-des-types: done
-  2-3-gestion-des-lieux-de-stockage: backlog
-  2-4-vue-contenu-dun-lieu-de-stockage: backlog
+  2-3-gestion-des-lieux-de-stockage: done
+  2-4-vue-contenu-dun-lieu-de-stockage: done
   epic-2-retrospective: optional
 
   # Epic 3: Gestion de l'Inventaire
