@@ -44,7 +44,7 @@ router
     router.resource('categories', CategoriesController).only(['index', 'store', 'update', 'destroy'])
     router.resource('types', TypesController).only(['index', 'store', 'update', 'destroy'])
     router.resource('storage-locations', StorageLocationsController).only(['index', 'show', 'store', 'update', 'destroy'])
-    router.resource('materials', MaterialsController).only(['index', 'create', 'store', 'show'])
+    router.resource('materials', MaterialsController).only(['index', 'create', 'store', 'show', 'edit', 'update'])
   })
   .use(middleware.auth())
 
