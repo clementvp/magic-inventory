@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import MaterialsIndex from './Index'
 import { router } from '@inertiajs/react'
 
@@ -167,15 +167,333 @@ describe('MaterialsIndex — Vue Switcher', () => {
     expect(screen.getByText(/Tiroir cartes/)).toBeInTheDocument()
   })
 
-  it('affiche l\'auteur en vue Cards', async () => {
+  it("affiche l'auteur en vue Cards", async () => {
     render(<MaterialsIndex materials={mockMaterials} />)
     await userEvent.click(screen.getByText('Cards'))
     expect(screen.getByText('Dai Vernon')).toBeInTheDocument()
   })
 
-  it('affiche l\'empty state en vue Cards quand aucun matériel', async () => {
+  it("affiche l'empty state en vue Cards quand aucun matériel", async () => {
     render(<MaterialsIndex materials={[]} />)
     await userEvent.click(screen.getByText('Cards'))
     expect(screen.getByText('Aucun matériel dans votre inventaire')).toBeInTheDocument()
+  })
+})
+
+describe('MaterialsIndex — Recherche', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('affiche le champ de recherche par nom', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    expect(screen.getByPlaceholderText('Rechercher par nom...')).toBeInTheDocument()
+  })
+
+  it('filtre par nom après debounce 300ms', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    // Saisir "Bicycle"
+    fireEvent.change(searchInput, { target: { value: 'Bicycle' } })
+
+    // Avant le debounce : les 2 matériels sont encore dans le DOM
+    expect(screen.getByText('Thumb Tip')).toBeInTheDocument()
+
+    // Avancer le timer de 300ms
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+
+    // Après le debounce : seul Bicycle Standard reste
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+  })
+
+  it('la recherche est case-insensitive', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    fireEvent.change(searchInput, { target: { value: 'bicycle' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+
+  it('affiche tous les matériels après effacement de la recherche', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    // Filtrer d'abord
+    fireEvent.change(searchInput, { target: { value: 'Bicycle' } })
+    act(() => { vi.advanceTimersByTime(300) })
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+
+    // Effacer → immediate clear (onChange avec valeur vide)
+    fireEvent.change(searchInput, { target: { value: '' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    // Les 2 matériels réapparaissent
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.getByText('Thumb Tip')).toBeInTheDocument()
+  })
+
+  it('affiche le compteur de résultats quand la recherche est active', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    fireEvent.change(searchInput, { target: { value: 'Bicycle' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(screen.getByText('1 résultat(s)')).toBeInTheDocument()
+  })
+
+  it("n'affiche pas le compteur quand aucun filtre actif", () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    expect(screen.queryByText(/résultat/)).not.toBeInTheDocument()
+  })
+
+  it('affiche no-results state quand la recherche ne trouve rien', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    fireEvent.change(searchInput, { target: { value: 'xxxxnotfound' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    expect(
+      screen.getByText('Aucun matériel ne correspond à vos critères de recherche')
+    ).toBeInTheDocument()
+  })
+
+  it('onSearch (touche Entrée) déclenche le filtre immédiatement sans attendre le debounce', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+
+    // Changer la valeur → démarre le debounce (300ms pas encore écoulés)
+    fireEvent.change(searchInput, { target: { value: 'Bicycle' } })
+
+    // Avant le debounce : Thumb Tip toujours présent
+    expect(screen.getByText('Thumb Tip')).toBeInTheDocument()
+
+    // Simuler Entrée → onSearch bypass le debounce et applique le filtre immédiatement
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter', keyCode: 13 })
+
+    // Sans avancer les timers : Thumb Tip a disparu grâce à onSearch
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+  })
+})
+
+describe('MaterialsIndex — Filtres (Drawer)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('affiche le bouton "Filtres"', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    expect(screen.getByRole('button', { name: 'Filtres' })).toBeInTheDocument()
+  })
+
+  it("ouvre le Drawer au clic sur 'Filtres'", async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    expect(screen.getByText('Réinitialiser les filtres')).toBeInTheDocument()
+  })
+
+  it('affiche les 4 sections de filtres dans le Drawer', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    // Utiliser les placeholders des Select pour éviter le conflit avec la colonne "Type" de la Table
+    expect(screen.getByText('Tous les types')).toBeInTheDocument()
+    expect(screen.getByText('Toutes les catégories')).toBeInTheDocument()
+    expect(screen.getByText('Tous les lieux')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Filtrer par auteur...')).toBeInTheDocument()
+  })
+
+  it('filtre par auteur (case-insensitive)', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    await userEvent.type(authorInput, 'dai')
+
+    // Seul Bicycle Standard (auteur: Dai Vernon) devrait être affiché
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+
+  it('affiche le compteur de résultats avec filtre auteur actif', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    await userEvent.type(authorInput, 'Vernon')
+
+    expect(screen.getByText('1 résultat(s)')).toBeInTheDocument()
+  })
+
+  it('réinitialise les filtres du Drawer', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Appliquer un filtre auteur
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    await userEvent.type(authorInput, 'Vernon')
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+
+    // Réinitialiser
+    await userEvent.click(screen.getByText('Réinitialiser les filtres'))
+
+    // Les 2 matériels réapparaissent
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.getByText('Thumb Tip')).toBeInTheDocument()
+  })
+
+  it('le bouton "Réinitialiser les filtres" est désactivé quand aucun filtre actif', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    const resetBtn = screen.getByText('Réinitialiser les filtres')
+    expect(resetBtn.closest('button')).toBeDisabled()
+  })
+
+  it('affiche no-results state quand le filtre auteur ne trouve rien', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    await userEvent.type(authorInput, 'xxxxnotfound')
+
+    expect(
+      screen.getByText('Aucun matériel ne correspond à vos critères de recherche')
+    ).toBeInTheDocument()
+  })
+
+  it('filtre par Type via le Select Drawer', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Ouvrir le Select Type (virtual={false} → dropdown rendu normalement)
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Filtrer par type' }))
+    await userEvent.click(await screen.findByTitle('Jeu de cartes'))
+
+    // Seul Bicycle Standard (type: Jeu de cartes) est affiché
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+
+  it('filtre par Catégorie (multi-select) via le Select Drawer', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Ouvrir le Select Catégorie
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Filtrer par catégorie' }))
+    await userEvent.click(await screen.findByTitle('Cartomagie'))
+
+    // Seul Bicycle Standard (catégorie: Cartomagie) est affiché
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+
+  it('filtre par Lieu de stockage via le Select Drawer', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Ouvrir le Select Lieu de stockage
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Filtrer par lieu de stockage' }))
+    await userEvent.click(await screen.findByTitle('Tiroir cartes'))
+
+    // Seul Bicycle Standard (lieu: Tiroir cartes) est affiché
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+
+  it('combinaison de 2 filtres Drawer — AND logic (type + auteur)', async () => {
+    // Matériel supplémentaire : même type que Bicycle Standard, auteur différent
+    const extendedMaterials = [
+      ...mockMaterials,
+      {
+        id: 3,
+        name: 'Multiplying Bottles',
+        type: { id: 1, name: 'Jeu de cartes' },
+        categories: [],
+        storageLocation: null,
+        author: 'Paul Harris',
+        createdAt: '2026-03-16T10:00:00.000Z',
+      },
+    ]
+    render(<MaterialsIndex materials={extendedMaterials} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+
+    // Filtre Type = "Jeu de cartes" → Bicycle + Multiplying Bottles (sans Thumb Tip)
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Filtrer par type' }))
+    await userEvent.click(await screen.findByTitle('Jeu de cartes'))
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.getByText('Multiplying Bottles')).toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+
+    // Ajout filtre Auteur = "Dai Vernon" → AND : seulement Bicycle Standard reste
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    await userEvent.type(authorInput, 'Dai Vernon')
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+    expect(screen.queryByText('Multiplying Bottles')).not.toBeInTheDocument()
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+  })
+})
+
+describe('MaterialsIndex — Combinaison filtres + vue', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('les filtres sont préservés lors du basculement Table → Cards', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+
+    // Appliquer une recherche
+    const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+    fireEvent.change(searchInput, { target: { value: 'Bicycle' } })
+    act(() => { vi.advanceTimersByTime(300) })
+
+    // Vérifier filtre actif en Table
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+
+    // Basculer vers Cards via fireEvent (compatible fake timers)
+    fireEvent.click(screen.getByText('Cards'))
+
+    // Le filtre est préservé en Cards
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+  })
+
+  it('les filtres sont préservés lors du basculement Cards → Table', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+
+    // Aller en Cards d'abord via fireEvent
+    fireEvent.click(screen.getByText('Cards'))
+
+    // Appliquer filtre auteur via Drawer
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }))
+    const authorInput = screen.getByPlaceholderText('Filtrer par auteur...')
+    fireEvent.change(authorInput, { target: { value: 'Dai Vernon' } })
+    act(() => { vi.advanceTimersByTime(0) })
+
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+
+    // Revenir en Table via fireEvent
+    fireEvent.click(screen.getByText('Table'))
+
+    // Le filtre reste actif
+    expect(screen.queryByText('Thumb Tip')).not.toBeInTheDocument()
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
   })
 })
