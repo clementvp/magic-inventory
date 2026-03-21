@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react'
-import { Button, Empty, Space, Table, Tag } from 'antd'
+import { useState } from 'react'
+import { Button, Card, Col, Empty, Pagination, Row, Segmented, Space, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
@@ -19,6 +20,15 @@ interface Props {
 }
 
 export default function MaterialsIndex({ materials }: Props) {
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [cardsPage, setCardsPage] = useState(1)
+
+  const CARDS_PAGE_SIZE = 12
+  const paginatedMaterials = materials.slice(
+    (cardsPage - 1) * CARDS_PAGE_SIZE,
+    cardsPage * CARDS_PAGE_SIZE
+  )
+
   const columns: ColumnsType<MaterialItem> = [
     {
       title: 'Nom',
@@ -82,29 +92,100 @@ export default function MaterialsIndex({ materials }: Props) {
     </Empty>
   )
 
+  const cardsView = (
+    <>
+      {materials.length === 0 ? (
+        emptyState
+      ) : (
+        <>
+          <Row gutter={[16, 16]}>
+            {paginatedMaterials.map((m) => (
+              <Col xs={24} sm={12} md={8} key={m.id}>
+                <Card
+                  hoverable
+                  onClick={() => router.visit(`/materials/${m.id}`)}
+                >
+                  <Card.Meta
+                    title={m.name}
+                    description={
+                      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                        {m.type && <Tag color="blue">{m.type.name}</Tag>}
+                        {m.categories.length > 0 && (
+                          <Space wrap size={4}>
+                            {m.categories.map((c) => (
+                              <Tag key={c.id}>{c.name}</Tag>
+                            ))}
+                          </Space>
+                        )}
+                        {m.storageLocation && (
+                          <span style={{ color: '#8c8c8c' }}>📦 {m.storageLocation.name}</span>
+                        )}
+                        {m.author && (
+                          <span style={{ color: '#8c8c8c' }}>{m.author}</span>
+                        )}
+                      </Space>
+                    }
+                  />
+                </Card>
+              </Col>
+            ))}
+          </Row>
+          <Pagination
+            current={cardsPage}
+            pageSize={CARDS_PAGE_SIZE}
+            total={materials.length}
+            onChange={(page) => { setCardsPage(page) }}
+            hideOnSinglePage
+            style={{ textAlign: 'center', marginTop: 16 }}
+          />
+        </>
+      )}
+    </>
+  )
+
   return (
     <Layout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1 style={{ margin: 0 }}>Mon Inventaire</h1>
-        <Button type="primary" onClick={() => router.visit('/materials/create')}>
-          Ajouter un matériel
-        </Button>
+        <Space>
+          <Segmented
+            value={viewMode}
+            onChange={(val) => {
+              if (val === 'table' || val === 'cards') {
+                setViewMode(val)
+                setCardsPage(1)
+              }
+            }}
+            options={[
+              { label: 'Table', value: 'table' },
+              { label: 'Cards', value: 'cards' },
+            ]}
+          />
+          <Button type="primary" onClick={() => router.visit('/materials/create')}>
+            Ajouter un matériel
+          </Button>
+        </Space>
       </div>
-      <Table<MaterialItem>
-        dataSource={materials}
-        columns={columns}
-        rowKey="id"
-        pagination={{
-          pageSize: 50,
-          showSizeChanger: true,
-          pageSizeOptions: ['25', '50', '100'],
-        }}
-        onRow={(record) => ({
-          onClick: () => router.visit(`/materials/${record.id}`),
-          style: { cursor: 'pointer' },
-        })}
-        locale={{ emptyText: emptyState }}
-      />
+
+      {viewMode === 'table' && (
+        <Table<MaterialItem>
+          dataSource={materials}
+          columns={columns}
+          rowKey="id"
+          pagination={{
+            pageSize: 50,
+            showSizeChanger: true,
+            pageSizeOptions: ['25', '50', '100'],
+          }}
+          onRow={(record) => ({
+            onClick: () => router.visit(`/materials/${record.id}`),
+            style: { cursor: 'pointer' },
+          })}
+          locale={{ emptyText: emptyState }}
+        />
+      )}
+
+      {viewMode === 'cards' && cardsView}
     </Layout>
   )
 }

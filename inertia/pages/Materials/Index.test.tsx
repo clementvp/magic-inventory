@@ -106,3 +106,76 @@ describe('MaterialsIndex', () => {
     expect(router.visit).toHaveBeenCalledWith('/materials/1')
   })
 })
+
+describe('MaterialsIndex — Vue Switcher', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('affiche le switcher avec les options Table et Cards', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    expect(screen.getByText('Table')).toBeInTheDocument()
+    expect(screen.getByText('Cards')).toBeInTheDocument()
+  })
+
+  it('affiche la vue Table par défaut', () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    // La table est visible (colonne "Nom" header Ant Design Table)
+    expect(screen.getAllByText('Nom').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('bascule vers la vue Cards au clic sur "Cards"', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    // En vue Cards, les colonnes Table ont disparu
+    expect(screen.queryByText("Date d'ajout")).not.toBeInTheDocument()
+    // Et le contenu Cards est visible
+    expect(screen.getByText('Bicycle Standard')).toBeInTheDocument()
+  })
+
+  it('affiche le type comme Tag en vue Cards', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    expect(screen.getByText('Jeu de cartes')).toBeInTheDocument()
+  })
+
+  it('affiche les catégories comme Tags en vue Cards', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    expect(screen.getByText('Cartomagie')).toBeInTheDocument()
+  })
+
+  it('navigue vers /materials/:id au clic sur une Card', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    // Cliquer sur la Card entière (via le titre)
+    await userEvent.click(screen.getByText('Bicycle Standard'))
+    expect(router.visit).toHaveBeenCalledWith('/materials/1')
+  })
+
+  it('bascule vers la vue Table depuis la vue Cards', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    await userEvent.click(screen.getByText('Table'))
+    // Vérifier qu'on est bien de retour en vue Table
+    expect(screen.getAllByText('Nom').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('affiche le lieu de stockage en vue Cards', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    expect(screen.getByText(/Tiroir cartes/)).toBeInTheDocument()
+  })
+
+  it('affiche l\'auteur en vue Cards', async () => {
+    render(<MaterialsIndex materials={mockMaterials} />)
+    await userEvent.click(screen.getByText('Cards'))
+    expect(screen.getByText('Dai Vernon')).toBeInTheDocument()
+  })
+
+  it('affiche l\'empty state en vue Cards quand aucun matériel', async () => {
+    render(<MaterialsIndex materials={[]} />)
+    await userEvent.click(screen.getByText('Cards'))
+    expect(screen.getByText('Aucun matériel dans votre inventaire')).toBeInTheDocument()
+  })
+})
