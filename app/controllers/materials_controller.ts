@@ -7,6 +7,29 @@ import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class MaterialsController {
+  async index({ auth, inertia }: HttpContext) {
+    const materials = await Material.query()
+      .where('user_id', auth.user!.id)
+      .preload('type')
+      .preload('categories')
+      .preload('storageLocation')
+      .orderBy('created_at', 'desc')
+
+    return inertia.render('Materials/Index', {
+      materials: materials.map((m) => ({
+        id: m.id,
+        name: m.name,
+        type: m.type ? { id: m.type.id, name: m.type.name } : null,
+        categories: m.categories.map((c) => ({ id: c.id, name: c.name })),
+        storageLocation: m.storageLocation
+          ? { id: m.storageLocation.id, name: m.storageLocation.name }
+          : null,
+        author: m.author,
+        createdAt: m.createdAt.toISO()!,
+      })),
+    })
+  }
+
   async create({ auth, inertia }: HttpContext) {
     const [types, categories, storageLocations] = await Promise.all([
       Type.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),

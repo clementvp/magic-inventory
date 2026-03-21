@@ -61,7 +61,7 @@ development_status:
   # Epic 3: Gestion de l'Inventaire
   epic-3: in-progress
   3-1-creation-de-materiel-avec-associations: done
-  3-2-liste-inventaire-vue-table: backlog
+  3-2-liste-inventaire-vue-table: done
   3-3-liste-inventaire-vue-cards-avec-switcher: backlog
   3-4-detail-dun-materiel: backlog
   3-5-modification-dun-materiel: backlog
