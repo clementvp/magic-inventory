@@ -212,4 +212,33 @@ export default class MaterialsController {
       return response.redirect().back()
     }
   }
+
+  async destroy({ params, auth, response, session }: HttpContext) {
+    try {
+      const material = await Material.query()
+        .where('user_id', auth.user!.id)
+        .where('id', params.id)
+        .firstOrFail()
+
+      // TODO Epic 4: Vérifier material_routine
+      // const routineCount = await material.related('routines').query().count('* as total')
+      // if (routineCount[0].$extras.total > 0) {
+      //   session.flash('error', 'Ce matériel est utilisé dans des routines et ne peut pas être supprimé. Retirez-le des routines d\'abord.')
+      //   return response.redirect().back()
+      // }
+
+      await material.delete()
+      // Note: material_category CASCADE DELETE via ON DELETE CASCADE (migration 1774000000002)
+      session.flash('success', 'Matériel supprimé avec succès')
+      return response.redirect().toRoute('materials.index')
+    } catch (error) {
+      if (error.status === 404) {
+        // Matériel inexistant ou n'appartenant pas à l'utilisateur → redirect silencieux
+        return response.redirect().toRoute('materials.index')
+      }
+      logger.error('Material deletion failed', { error, userId: auth.user?.id })
+      session.flash('error', 'Une erreur est survenue lors de la suppression du matériel')
+      return response.redirect().toRoute('materials.index')
+    }
+  }
 }

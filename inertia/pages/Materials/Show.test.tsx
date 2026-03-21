@@ -118,7 +118,7 @@ describe('MaterialsShow', () => {
     await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
     expect(router.delete).toHaveBeenCalledWith(
       '/materials/1',
-      expect.objectContaining({ onSuccess: expect.any(Function) })
+      expect.objectContaining({ onError: expect.any(Function) })
     )
   })
 })

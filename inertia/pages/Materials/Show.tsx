@@ -1,6 +1,6 @@
 import { router, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Descriptions, Popconfirm, Space, Tag, Typography } from 'antd'
+import { Button, Descriptions, message, Popconfirm, Space, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import 'dayjs/locale/fr'
 import Layout from '~/components/Layout'
@@ -27,8 +27,10 @@ export default function MaterialsShow({ material }: Props) {
   const handleDelete = () => {
     setDeleting(true)
     router.delete(`/materials/${material.id}`, {
-      onSuccess: () => router.visit('/materials'),
-      onError: () => setDeleting(false),
+      onError: () => {
+        setDeleting(false)
+        message.error('Une erreur est survenue lors de la suppression du matériel')
+      },
     })
   }
 
