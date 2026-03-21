@@ -30,6 +30,30 @@ export default class MaterialsController {
     })
   }
 
+  async show({ params, auth, inertia }: HttpContext) {
+    const material = await Material.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .preload('type')
+      .preload('categories')
+      .preload('storageLocation')
+      .firstOrFail()
+
+    return inertia.render('Materials/Show', {
+      material: {
+        id: material.id,
+        name: material.name,
+        type: material.type ? { id: material.type.id, name: material.type.name } : null,
+        categories: material.categories.map((c) => ({ id: c.id, name: c.name })),
+        storageLocation: material.storageLocation
+          ? { id: material.storageLocation.id, name: material.storageLocation.name }
+          : null,
+        author: material.author,
+        createdAt: material.createdAt.toISO()!,
+      },
+    })
+  }
+
   async create({ auth, inertia }: HttpContext) {
     const [types, categories, storageLocations] = await Promise.all([
       Type.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),

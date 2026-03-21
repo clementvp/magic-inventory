@@ -62,8 +62,8 @@ development_status:
   epic-3: in-progress
   3-1-creation-de-materiel-avec-associations: done
   3-2-liste-inventaire-vue-table: done
-  3-3-liste-inventaire-vue-cards-avec-switcher: backlog
-  3-4-detail-dun-materiel: backlog
+  3-3-liste-inventaire-vue-cards-avec-switcher: done
+  3-4-detail-dun-materiel: done
   3-5-modification-dun-materiel: backlog
   3-6-suppression-dun-materiel: backlog
   3-7-recherche-et-filtrage-multi-criteres-inventaire: backlog
