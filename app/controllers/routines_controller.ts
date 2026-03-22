@@ -155,6 +155,36 @@ export default class RoutinesController {
     }
   }
 
+  async destroy({ params, auth, response, session }: HttpContext) {
+    try {
+      const routine = await Routine.query()
+        .where('user_id', auth.user!.id)
+        .where('id', params.id)
+        .firstOrFail()
+
+      // TODO Epic 5: Vérifier show_routines avant suppression
+      // Quand la table show_routines existera (Epic 5), ajouter :
+      //   const showCount = await routine.related('shows').query().count('* as total')
+      //   if (showCount[0].$extras.total > 0) {
+      //     session.flash('error', 'Cette routine est utilisée dans des spectacles et ne peut pas être supprimée')
+      //     return response.redirect().toRoute('routines.show', { id: params.id })
+      //   }
+
+      await routine.delete()
+      // Note: routine_category et material_routine sont supprimés automatiquement (ON DELETE CASCADE)
+
+      session.flash('success', 'Routine supprimée avec succès')
+      return response.redirect().toRoute('routines.index')
+    } catch (error) {
+      if (error.status === 404) {
+        return response.redirect().toRoute('routines.index')
+      }
+      logger.error('Routine deletion failed', { error, userId: auth.user?.id })
+      session.flash('error', 'Une erreur est survenue lors de la suppression de la routine')
+      return response.redirect().toRoute('routines.index')
+    }
+  }
+
   async attachMaterial({ params, request, auth, session, response }: HttpContext) {
     const routine = await Routine.query()
       .where('user_id', auth.user!.id)
