@@ -44,6 +44,7 @@ export default class ShowsController {
       show: {
         id: show.id,
         name: show.name,
+        notes: show.notes,
         routines: show.routines.map((r) => ({
           id: r.id,
           name: r.name,
@@ -64,7 +65,7 @@ export default class ShowsController {
 
     try {
       show.name = data.name
-      // Note: data.notes validé mais non persisté en Story 5.1 (colonne ajoutée en Story 5.2)
+      show.notes = data.notes?.trim() || null
       await show.save()
 
       session.flash('success', 'Spectacle enregistré avec succès')

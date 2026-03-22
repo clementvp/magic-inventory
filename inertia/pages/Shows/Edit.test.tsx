@@ -22,12 +22,14 @@ vi.mock('~/components/Layout', () => ({
 const mockShow = {
   id: 1,
   name: 'Soirée mariage',
+  notes: null,
   routines: [],
 }
 
 const mockShowWithRoutines = {
   id: 1,
   name: 'Soirée mariage',
+  notes: null,
   routines: [
     {
       id: 10,
@@ -196,6 +198,54 @@ describe('ShowsEdit', () => {
     await user.click(retirerButtons[0])
     await waitFor(() => {
       expect(screen.getByText('Retirer cette routine du spectacle ?')).toBeInTheDocument()
+    })
+  })
+
+  it('affiche le champ "Notes" (AC1)', () => {
+    renderEdit()
+    expect(screen.getByLabelText('Notes')).toBeInTheDocument()
+  })
+
+  it('pré-remplit le TextArea si notes non null (AC5)', () => {
+    renderEdit({ notes: 'Mes notes de spectacle' })
+    expect(screen.getByLabelText('Notes')).toHaveValue('Mes notes de spectacle')
+  })
+
+  it('affiche le TextArea vide si notes est null (AC6)', () => {
+    renderEdit({ notes: null })
+    expect(screen.getByLabelText('Notes')).toHaveValue('')
+  })
+
+  it('affiche le placeholder du champ Notes (AC2)', () => {
+    renderEdit()
+    expect(
+      screen.getByPlaceholderText('Notes, annotations, consignes pour ce spectacle...')
+    ).toBeInTheDocument()
+  })
+
+  it('envoie notes vide comme chaîne vide à la soumission (AC6)', async () => {
+    const user = userEvent.setup()
+    renderEdit({ notes: null })
+    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await waitFor(() => {
+      expect(router.put).toHaveBeenCalledWith(
+        '/shows/1',
+        expect.objectContaining({ notes: '' }),
+        expect.objectContaining({ onFinish: expect.any(Function) })
+      )
+    })
+  })
+
+  it('inclut notes dans router.put à la soumission (AC3, AC4)', async () => {
+    const user = userEvent.setup()
+    render(<ShowsEdit show={{ ...mockShow, notes: 'Mes notes de spectacle' }} allRoutines={mockAllRoutines} />)
+    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await waitFor(() => {
+      expect(router.put).toHaveBeenCalledWith(
+        '/shows/1',
+        expect.objectContaining({ notes: 'Mes notes de spectacle' }),
+        expect.objectContaining({ onFinish: expect.any(Function) })
+      )
     })
   })
 

@@ -14,6 +14,9 @@ export default class Show extends BaseModel {
   @column()
   declare name: string
 
+  @column()
+  declare notes: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

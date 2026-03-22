@@ -17,6 +17,7 @@ interface LinkedRoutine {
 interface ShowEditData {
   id: number
   name: string
+  notes?: string | null
   routines: LinkedRoutine[]
 }
 
@@ -32,7 +33,7 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
   const [selectedRoutineIds, setSelectedRoutineIds] = useState<number[]>([])
   const [submittingRoutine, setSubmittingRoutine] = useState(false)
 
-  const handleSubmit = (values: { name: string }) => {
+  const handleSubmit = (values: { name: string; notes?: string }) => {
     setSubmitting(true)
     router.put(`/shows/${show.id}`, values, {
       onFinish: () => setSubmitting(false),
@@ -67,7 +68,7 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
         onFinish={handleSubmit}
         layout="vertical"
         style={{ maxWidth: 600 }}
-        initialValues={{ name: show.name }}
+        initialValues={{ name: show.name, notes: show.notes ?? '' }}
       >
         <Form.Item
           name="name"
@@ -75,6 +76,13 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
           rules={[{ required: true, message: 'Le nom est requis' }]}
         >
           <Input placeholder="Ex: Soirée mariage, Festival d'été..." />
+        </Form.Item>
+
+        <Form.Item name="notes" label="Notes">
+          <Input.TextArea
+            autoSize={{ minRows: 10, maxRows: 30 }}
+            placeholder="Notes, annotations, consignes pour ce spectacle..."
+          />
         </Form.Item>
 
         <Form.Item>
