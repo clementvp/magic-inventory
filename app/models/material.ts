@@ -5,6 +5,7 @@ import User from '#models/user'
 import Type from '#models/type'
 import StorageLocation from '#models/storage_location'
 import Category from '#models/category'
+import Routine from '#models/routine'
 
 export default class Material extends BaseModel {
   @column({ isPrimary: true })
@@ -48,4 +49,13 @@ export default class Material extends BaseModel {
     pivotRelatedForeignKey: 'category_id',
   })
   declare categories: ManyToMany<typeof Category>
+
+  @manyToMany(() => Routine, {
+    pivotTable: 'material_routine',
+    localKey: 'id',
+    pivotForeignKey: 'material_id',
+    relatedKey: 'id',
+    pivotRelatedForeignKey: 'routine_id',
+  })
+  declare routines: ManyToMany<typeof Routine>
 }

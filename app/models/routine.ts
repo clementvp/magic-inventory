@@ -3,6 +3,7 @@ import { BaseModel, column, belongsTo, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import Category from '#models/category'
+import Material from '#models/material'
 
 export default class Routine extends BaseModel {
   @column({ isPrimary: true })
@@ -34,4 +35,13 @@ export default class Routine extends BaseModel {
     pivotRelatedForeignKey: 'category_id',
   })
   declare categories: ManyToMany<typeof Category>
+
+  @manyToMany(() => Material, {
+    pivotTable: 'material_routine',
+    localKey: 'id',
+    pivotForeignKey: 'routine_id',
+    relatedKey: 'id',
+    pivotRelatedForeignKey: 'material_id',
+  })
+  declare materials: ManyToMany<typeof Material>
 }

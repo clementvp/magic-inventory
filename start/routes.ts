@@ -47,6 +47,8 @@ router
     router.resource('storage-locations', StorageLocationsController).only(['index', 'show', 'store', 'update', 'destroy'])
     router.resource('materials', MaterialsController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
     router.resource('routines', RoutinesController).only(['create', 'store', 'edit', 'update'])
+    router.post('/routines/:id/materials', [RoutinesController, 'attachMaterial'])
+    router.delete('/routines/:id/materials/:materialId', [RoutinesController, 'detachMaterial'])
   })
   .use(middleware.auth())
 
