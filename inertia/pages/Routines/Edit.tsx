@@ -68,8 +68,8 @@ export default function RoutinesEdit({ routine, categories, allMaterials }: Prop
   }
 
   return (
-    <Layout title={routine.name}>
-      <h1>Modifier la routine</h1>
+    <Layout title="Modifier">
+      <Typography.Title level={1}>Modifier la routine</Typography.Title>
       <Form
         form={form}
         onFinish={handleSubmit}

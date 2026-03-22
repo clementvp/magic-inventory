@@ -122,12 +122,12 @@ export default class RoutinesController {
   }
 
   async update({ params, request, auth, session, response }: HttpContext) {
+    const data = await request.validateUsing(updateRoutineValidator)
+
     const routine = await Routine.query()
       .where('user_id', auth.user!.id)
       .where('id', params.id)
       .firstOrFail()
-
-    const data = await request.validateUsing(updateRoutineValidator)
 
     try {
       if (data.categoryIds && data.categoryIds.length > 0) {
@@ -146,7 +146,7 @@ export default class RoutinesController {
 
       await routine.related('categories').sync(data.categoryIds ?? [])
 
-      session.flash('success', 'Routine enregistrée avec succès')
+      session.flash('success', 'Routine modifiée avec succès')
       return response.redirect().toPath(`/routines/${routine.id}`)
     } catch (error) {
       logger.error('Failed to update routine', { error, data })

@@ -14,7 +14,9 @@ vi.mock('@inertiajs/react', () => ({
 }))
 
 vi.mock('~/components/Layout', () => ({
-  default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  default: ({ children, title }: { children: ReactNode; title?: string }) => (
+    <div data-testid="layout" data-title={title}>{children}</div>
+  ),
 }))
 
 const mockRoutine = {
@@ -287,5 +289,11 @@ describe('RoutinesEdit', () => {
         })
       )
     })
+  })
+
+  // AC: 1 — breadcrumb : dernier segment = "Modifier"
+  it('passe title="Modifier" à Layout pour le breadcrumb', () => {
+    renderEdit()
+    expect(screen.getByTestId('layout')).toHaveAttribute('data-title', 'Modifier')
   })
 })
