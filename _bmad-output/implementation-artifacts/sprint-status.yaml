@@ -82,8 +82,8 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5: Spectacles et Préparation de Prestations
-  epic-5: backlog
-  5-1-creation-de-spectacle-et-liaison-routines: backlog
+  epic-5: in-progress
+  5-1-creation-de-spectacle-et-liaison-routines: done
   5-2-editeur-de-notes-pour-spectacles: backlog
   5-3-liste-des-spectacles: backlog
   5-4-detail-dun-spectacle-avec-navigation-bidirectionnelle: backlog
