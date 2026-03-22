@@ -18,6 +18,7 @@ const CategoriesController = () => import('#controllers/categories_controller')
 const TypesController = () => import('#controllers/types_controller')
 const StorageLocationsController = () => import('#controllers/storage_locations_controller')
 const MaterialsController = () => import('#controllers/materials_controller')
+const RoutinesController = () => import('#controllers/routines_controller')
 
 // Page d'accueil publique avec redirection intelligente
 router.get('/', [HomeController, 'index']).as('home')
@@ -45,6 +46,7 @@ router
     router.resource('types', TypesController).only(['index', 'store', 'update', 'destroy'])
     router.resource('storage-locations', StorageLocationsController).only(['index', 'show', 'store', 'update', 'destroy'])
     router.resource('materials', MaterialsController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
+    router.resource('routines', RoutinesController).only(['create', 'store'])
   })
   .use(middleware.auth())
 
