@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { router } from '@inertiajs/react'
-import { Button, List, Space, Tag, Typography } from 'antd'
+import { Button, List, message, Popconfirm, Space, Tag, Typography } from 'antd'
 import Layout from '~/components/Layout'
 
 interface MaterialItem {
@@ -23,6 +24,18 @@ interface Props {
 }
 
 export default function RoutinesShow({ routine }: Props) {
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = () => {
+    setDeleting(true)
+    router.delete(`/routines/${routine.id}`, {
+      onError: () => {
+        setDeleting(false)
+        message.error('Une erreur est survenue lors de la suppression de la routine')
+      },
+    })
+  }
+
   return (
     <Layout title={routine.name}>
       <Typography.Title level={1}>{routine.name}</Typography.Title>
@@ -31,7 +44,14 @@ export default function RoutinesShow({ routine }: Props) {
         <Button type="primary" onClick={() => router.visit(`/routines/${routine.id}/edit`)}>
           Modifier
         </Button>
-        <Button danger>Supprimer</Button>
+        <Popconfirm
+          title="Êtes-vous sûr de vouloir supprimer cette routine ?"
+          onConfirm={handleDelete}
+          okText="Supprimer"
+          cancelText="Annuler"
+        >
+          <Button danger loading={deleting}>Supprimer</Button>
+        </Popconfirm>
         <Button onClick={() => router.visit('/routines')}>Retour aux routines</Button>
       </Space>
 

@@ -6,8 +6,7 @@ import RoutinesShow from './Show'
 import { router } from '@inertiajs/react'
 
 vi.mock('@inertiajs/react', () => ({
-  router: { visit: vi.fn() },
-  usePage: () => ({ url: '/routines/1', props: { flash: {} } }),
+  router: { visit: vi.fn(), delete: vi.fn() },
 }))
 
 vi.mock('~/components/Layout', () => ({
@@ -38,7 +37,7 @@ const sampleRoutine = {
 
 describe('RoutinesShow', () => {
   beforeEach(() => {
-    vi.mocked(router.visit).mockClear()
+    vi.clearAllMocks()
   })
 
   it('affiche le nom de la routine', () => {
@@ -116,5 +115,30 @@ describe('RoutinesShow', () => {
   it('affiche "Aucun contenu" si content est null', () => {
     render(<RoutinesShow routine={{ ...sampleRoutine, content: null }} />)
     expect(screen.getByText('Aucun contenu')).toBeDefined()
+  })
+
+  it("ouvre un Popconfirm au clic 'Supprimer'", async () => {
+    render(<RoutinesShow routine={sampleRoutine} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    expect(await screen.findByText('Êtes-vous sûr de vouloir supprimer cette routine ?')).toBeInTheDocument()
+  })
+
+  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+    render(<RoutinesShow routine={sampleRoutine} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    const supprimerButtons = await screen.findAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
+    expect(router.delete).toHaveBeenCalledWith(
+      '/routines/1',
+      expect.objectContaining({ onError: expect.any(Function) })
+    )
+  })
+
+  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+    render(<RoutinesShow routine={sampleRoutine} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    const annulerButton = await screen.findByRole('button', { name: /annuler/i })
+    await userEvent.click(annulerButton)
+    expect(router.delete).not.toHaveBeenCalled()
   })
 })
