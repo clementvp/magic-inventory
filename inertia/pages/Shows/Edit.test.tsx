@@ -128,11 +128,33 @@ describe('ShowsEdit', () => {
     })
   })
 
-  it('appelle router.visit /shows au clic Annuler', async () => {
+  it('appelle router.visit /shows/:id dynamiquement au clic Annuler', async () => {
+    const user = userEvent.setup()
+    render(<ShowsEdit show={{ ...mockShow, id: 42 }} allRoutines={mockAllRoutines} />)
+    await user.click(screen.getByRole('button', { name: /annuler/i }))
+    expect(router.visit).toHaveBeenCalledWith('/shows/42')
+  })
+
+  it('affiche les erreurs serveur via onError dans router.put', async () => {
+    const user = userEvent.setup()
+    vi.mocked(router.put).mockImplementationOnce((_url: string, _data: unknown, options: any) => {
+      options?.onError?.({ name: 'Le nom est déjà utilisé' })
+      options?.onFinish?.()
+    })
+    renderEdit()
+    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Le nom est déjà utilisé')).toBeInTheDocument()
+    })
+  })
+
+  it('le bouton "Ajouter" du modal est désactivé si aucune routine sélectionnée', async () => {
     const user = userEvent.setup()
     renderEdit()
-    await user.click(screen.getByRole('button', { name: /annuler/i }))
-    expect(router.visit).toHaveBeenCalledWith('/shows')
+    await user.click(screen.getByRole('button', { name: /ajouter des routines/i }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^ajouter$/i })).toBeDisabled()
+    })
   })
 
   it('ouvre le Modal au clic "Ajouter des routines" (AC6)', async () => {

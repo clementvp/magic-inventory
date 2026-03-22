@@ -37,6 +37,11 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
     setSubmitting(true)
     router.put(`/shows/${show.id}`, values, {
       onFinish: () => setSubmitting(false),
+      onError: (errors) => {
+        form.setFields(
+          Object.entries(errors).map(([name, message]) => ({ name, errors: [message] }))
+        )
+      },
     })
   }
 
@@ -89,7 +94,7 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
           <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
             Enregistrer
           </Button>
-          <Button onClick={() => router.visit('/shows')}>Annuler</Button>
+          <Button onClick={() => router.visit(`/shows/${show.id}`)}>Annuler</Button>
         </Form.Item>
       </Form>
 
@@ -148,6 +153,7 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
         onOk={handleAttach}
         confirmLoading={submittingRoutine}
         okText="Ajouter"
+        okButtonProps={{ disabled: selectedRoutineIds.length === 0 }}
         cancelText="Annuler"
       >
         <Select

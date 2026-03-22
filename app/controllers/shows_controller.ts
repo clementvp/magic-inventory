@@ -95,20 +95,20 @@ export default class ShowsController {
   }
 
   async update({ params, request, auth, session, response }: HttpContext) {
-    const data = await request.validateUsing(updateShowValidator)
-
     const show = await Show.query()
       .where('user_id', auth.user!.id)
       .where('id', params.id)
       .firstOrFail()
 
+    const data = await request.validateUsing(updateShowValidator)
+
     try {
       show.name = data.name
-      show.notes = data.notes?.trim() || null
+      show.notes = data.notes || null
       await show.save()
 
-      session.flash('success', 'Spectacle enregistré avec succès')
-      return response.redirect().toPath(`/shows/${show.id}/edit`)
+      session.flash('success', 'Spectacle modifié avec succès')
+      return response.redirect().toPath(`/shows/${show.id}`)
     } catch (error) {
       logger.error('Failed to update show', { error, data })
       session.flash('error', 'Une erreur est survenue lors de la sauvegarde')
