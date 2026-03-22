@@ -7,6 +7,23 @@ import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ShowsController {
+  async index({ auth, inertia }: HttpContext) {
+    const shows = await Show.query()
+      .where('user_id', auth.user!.id)
+      .withCount('routines')
+      .orderBy('created_at', 'desc')
+      .limit(200)
+
+    return inertia.render('Shows/Index', {
+      shows: shows.map((s) => ({
+        id: s.id,
+        name: s.name,
+        routinesCount: Number(s.$extras.routinesCount),
+        createdAt: s.createdAt.toISO() ?? '',
+      })),
+    })
+  }
+
   async create({ inertia }: HttpContext) {
     return inertia.render('Shows/Create')
   }

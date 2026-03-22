@@ -85,7 +85,7 @@ development_status:
   epic-5: in-progress
   5-1-creation-de-spectacle-et-liaison-routines: done
   5-2-editeur-de-notes-pour-spectacles: done
-  5-3-liste-des-spectacles: backlog
+  5-3-liste-des-spectacles: done
   5-4-detail-dun-spectacle-avec-navigation-bidirectionnelle: backlog
   5-5-generation-de-checklist-interactive: backlog
   5-6-modification-dun-spectacle: backlog
