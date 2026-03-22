@@ -1,7 +1,9 @@
 import Routine from '#models/routine'
 import Category from '#models/category'
+import Material from '#models/material'
 import { createRoutineValidator } from '#validators/routines/create_routine_validator'
 import { updateRoutineValidator } from '#validators/routines/update_routine_validator'
+import { attachMaterialValidator } from '#validators/routines/attach_material_validator'
 import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -44,11 +46,15 @@ export default class RoutinesController {
       .where('user_id', auth.user!.id)
       .where('id', params.id)
       .preload('categories')
+      .preload('materials', (q) => {
+        q.preload('type').preload('storageLocation')
+      })
       .firstOrFail()
 
-    const categories = await Category.query()
-      .where('user_id', auth.user!.id)
-      .orderBy('name', 'asc')
+    const [categories, allMaterials] = await Promise.all([
+      Category.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),
+      Material.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),
+    ])
 
     return inertia.render('Routines/Edit', {
       routine: {
@@ -56,8 +62,17 @@ export default class RoutinesController {
         name: routine.name,
         content: routine.content,
         categoryIds: routine.categories.map((c) => c.id),
+        materials: routine.materials.map((m) => ({
+          id: m.id,
+          name: m.name,
+          type: m.type ? { id: m.type.id, name: m.type.name } : null,
+          storageLocation: m.storageLocation
+            ? { id: m.storageLocation.id, name: m.storageLocation.name }
+            : null,
+        })),
       },
       categories: categories.map((c) => ({ id: c.id, name: c.name })),
+      allMaterials: allMaterials.map((m) => ({ id: m.id, name: m.name })),
     })
   }
 
@@ -91,6 +106,61 @@ export default class RoutinesController {
     } catch (error) {
       logger.error('Failed to update routine', { error, data })
       session.flash('error', 'Une erreur est survenue lors de la sauvegarde')
+      return response.redirect().back()
+    }
+  }
+
+  async attachMaterial({ params, request, auth, session, response }: HttpContext) {
+    const routine = await Routine.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .firstOrFail()
+
+    const data = await request.validateUsing(attachMaterialValidator)
+
+    // Dédupliquer pour éviter un faux échec de l'ownership check si le client envoie des doublons
+    const uniqueMaterialIds = [...new Set(data.materialIds)]
+
+    // Vérification ownership IDOR
+    const ownedMaterials = await Material.query()
+      .whereIn('id', uniqueMaterialIds)
+      .where('user_id', auth.user!.id)
+    if (ownedMaterials.length !== uniqueMaterialIds.length) {
+      session.flash('error', 'Matériel invalide')
+      return response.redirect().back()
+    }
+
+    try {
+      // sync avec false = attach sans détacher les existants
+      await routine.related('materials').sync(uniqueMaterialIds, false)
+      session.flash('success', 'Matériel ajouté à la routine')
+      return response.redirect().toPath(`/routines/${routine.id}/edit`)
+    } catch (error) {
+      logger.error('Failed to attach material to routine', { error })
+      session.flash('error', "Une erreur est survenue lors de l'ajout du matériel")
+      return response.redirect().back()
+    }
+  }
+
+  async detachMaterial({ params, auth, session, response }: HttpContext) {
+    const routine = await Routine.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .firstOrFail()
+
+    // Vérifier que le matériel appartient à l'utilisateur
+    await Material.query()
+      .where('id', params.materialId)
+      .where('user_id', auth.user!.id)
+      .firstOrFail()
+
+    try {
+      await routine.related('materials').detach([Number(params.materialId)])
+      session.flash('success', 'Matériel retiré de la routine')
+      return response.redirect().toPath(`/routines/${routine.id}/edit`)
+    } catch (error) {
+      logger.error('Failed to detach material from routine', { error })
+      session.flash('error', 'Une erreur est survenue lors du retrait du matériel')
       return response.redirect().back()
     }
   }
