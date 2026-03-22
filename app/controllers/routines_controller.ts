@@ -57,6 +57,35 @@ export default class RoutinesController {
     }
   }
 
+  async show({ params, auth, inertia }: HttpContext) {
+    const routine = await Routine.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .preload('categories')
+      .preload('materials', (q) => {
+        q.preload('type').preload('storageLocation')
+      })
+      .firstOrFail()
+
+    return inertia.render('Routines/Show', {
+      routine: {
+        id: routine.id,
+        name: routine.name,
+        content: routine.content,
+        categories: routine.categories.map((c) => ({ id: c.id, name: c.name })),
+        materials: routine.materials.map((m) => ({
+          id: m.id,
+          name: m.name,
+          type: m.type ? { id: m.type.id, name: m.type.name } : null,
+          storageLocation: m.storageLocation
+            ? { id: m.storageLocation.id, name: m.storageLocation.name }
+            : null,
+        })),
+        createdAt: routine.createdAt.toISO() ?? '',
+      },
+    })
+  }
+
   async edit({ params, auth, inertia }: HttpContext) {
     const routine = await Routine.query()
       .where('user_id', auth.user!.id)
