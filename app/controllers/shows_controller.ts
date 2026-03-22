@@ -24,6 +24,28 @@ export default class ShowsController {
     })
   }
 
+  async show({ params, auth, inertia }: HttpContext) {
+    const show = await Show.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .preload('routines', (q) => q.preload('categories'))
+      .firstOrFail()
+
+    return inertia.render('Shows/Show', {
+      show: {
+        id: show.id,
+        name: show.name,
+        notes: show.notes,
+        createdAt: show.createdAt.toISO() ?? '',
+        routines: show.routines.map((r) => ({
+          id: r.id,
+          name: r.name,
+          categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
+        })),
+      },
+    })
+  }
+
   async create({ inertia }: HttpContext) {
     return inertia.render('Shows/Create')
   }
@@ -92,6 +114,47 @@ export default class ShowsController {
       session.flash('error', 'Une erreur est survenue lors de la sauvegarde')
       return response.redirect().back()
     }
+  }
+
+  async checklist({ params, auth, inertia }: HttpContext) {
+    const show = await Show.query()
+      .where('user_id', auth.user!.id)
+      .where('id', params.id)
+      .preload('routines', (q) =>
+        q.preload('materials', (mq) => mq.preload('type').preload('storageLocation'))
+      )
+      .firstOrFail()
+
+    const materialsMap = new Map<
+      number,
+      {
+        id: number
+        name: string
+        type: { id: number; name: string } | null
+        storageLocation: { id: number; name: string } | null
+      }
+    >()
+
+    for (const routine of show.routines) {
+      for (const material of routine.materials) {
+        if (!materialsMap.has(material.id)) {
+          materialsMap.set(material.id, {
+            id: material.id,
+            name: material.name,
+            type: material.type ? { id: material.type.id, name: material.type.name } : null,
+            storageLocation: material.storageLocation
+              ? { id: material.storageLocation.id, name: material.storageLocation.name }
+              : null,
+          })
+        }
+      }
+    }
+
+    return inertia.render('Shows/Checklist', {
+      show: { id: show.id, name: show.name },
+      materials: [...materialsMap.values()],
+      hasRoutines: show.routines.length > 0,
+    })
   }
 
   async attachRoutine({ params, request, auth, session, response }: HttpContext) {

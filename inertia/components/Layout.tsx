@@ -20,9 +20,10 @@ const { Search } = Input
 interface LayoutProps {
   children: ReactNode
   title?: string
+  breadcrumbLabels?: Record<string, string>
 }
 
-export default function Layout({ children, title }: LayoutProps) {
+export default function Layout({ children, title, breadcrumbLabels }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const { url } = usePage()
 
@@ -62,7 +63,7 @@ export default function Layout({ children, title }: LayoutProps) {
 
     segments.forEach((segment, index) => {
       const isLast = index === segments.length - 1
-      const label = isLast && title ? title : (labelMap[segment] || segment)
+      const label = isLast && title ? title : (breadcrumbLabels?.[segment] || labelMap[segment] || segment)
       const path = '/' + segments.slice(0, index + 1).join('/')
 
       // Dernier segment non cliquable
