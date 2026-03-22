@@ -8,6 +8,22 @@ import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class RoutinesController {
+  async index({ auth, inertia }: HttpContext) {
+    const routines = await Routine.query()
+      .where('user_id', auth.user!.id)
+      .preload('categories')
+      .orderBy('created_at', 'desc')
+
+    return inertia.render('Routines/Index', {
+      routines: routines.map((r) => ({
+        id: r.id,
+        name: r.name,
+        categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
+        createdAt: r.createdAt.toISO() ?? '',
+      })),
+    })
+  }
+
   async create({ auth, inertia }: HttpContext) {
     const categories = await Category.query()
       .where('user_id', auth.user!.id)
