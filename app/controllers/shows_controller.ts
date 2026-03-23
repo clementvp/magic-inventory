@@ -157,6 +157,27 @@ export default class ShowsController {
     })
   }
 
+  async destroy({ params, auth, response, session }: HttpContext) {
+    try {
+      const show = await Show.query()
+        .where('user_id', auth.user!.id)
+        .where('id', params.id)
+        .firstOrFail()
+
+      await show.delete()
+
+      session.flash('success', 'Spectacle supprimé avec succès')
+      return response.redirect().toRoute('shows.index')
+    } catch (error) {
+      if (error.status === 404) {
+        return response.redirect().toRoute('shows.index')
+      }
+      logger.error('Show deletion failed', { error, userId: auth.user?.id })
+      session.flash('error', 'Une erreur est survenue lors de la suppression du spectacle')
+      return response.redirect().toRoute('shows.index')
+    }
+  }
+
   async attachRoutine({ params, request, auth, session, response }: HttpContext) {
     const show = await Show.query()
       .where('user_id', auth.user!.id)

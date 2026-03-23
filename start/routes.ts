@@ -50,7 +50,7 @@ router
     router.resource('routines', RoutinesController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
     router.post('/routines/:id/materials', [RoutinesController, 'attachMaterial'])
     router.delete('/routines/:id/materials/:materialId', [RoutinesController, 'detachMaterial'])
-    router.resource('shows', ShowsController).only(['index', 'create', 'store', 'show', 'edit', 'update'])
+    router.resource('shows', ShowsController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
     router.post('/shows/:id/routines', [ShowsController, 'attachRoutine'])
     router.delete('/shows/:id/routines/:routineId', [ShowsController, 'detachRoutine'])
     router.get('/shows/:id/checklist', [ShowsController, 'checklist'])

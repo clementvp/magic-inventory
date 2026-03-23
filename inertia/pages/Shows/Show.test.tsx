@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { message } from 'antd'
 import ShowsShow from './Show'
 import { router } from '@inertiajs/react'
 
@@ -115,9 +116,41 @@ describe('ShowsShow', () => {
     expect(router.visit).toHaveBeenCalledWith('/shows/1/checklist')
   })
 
-  it('le bouton "Supprimer" est disabled', () => {
+  it("ouvre un Popconfirm au clic 'Supprimer'", async () => {
     render(<ShowsShow show={sampleShow} />)
-    const supprimerBtn = screen.getByRole('button', { name: /supprimer/i })
-    expect(supprimerBtn).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    expect(await screen.findByText("Êtes-vous sûr de vouloir supprimer ce spectacle ?")).toBeInTheDocument()
+  })
+
+  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+    render(<ShowsShow show={sampleShow} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    const confirmBtn = await screen.findByRole('button', { name: /oui, supprimer/i })
+    await userEvent.click(confirmBtn)
+    expect(router.delete).toHaveBeenCalledWith(
+      '/shows/1',
+      expect.objectContaining({ onError: expect.any(Function), onFinish: expect.any(Function) })
+    )
+  })
+
+  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+    render(<ShowsShow show={sampleShow} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    const annulerButton = await screen.findByRole('button', { name: /annuler/i })
+    await userEvent.click(annulerButton)
+    expect(router.delete).not.toHaveBeenCalled()
+  })
+
+  it("onError affiche message.error et réinitialise l'état loading", async () => {
+    const messageSpy = vi.spyOn(message, 'error').mockImplementation(() => {})
+    vi.mocked(router.delete).mockImplementationOnce((_url: string, options: any) => {
+      options?.onError?.()
+    })
+    render(<ShowsShow show={sampleShow} />)
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+    const confirmBtn = await screen.findByRole('button', { name: /oui, supprimer/i })
+    await userEvent.click(confirmBtn)
+    expect(messageSpy).toHaveBeenCalledWith('Une erreur est survenue lors de la suppression du spectacle')
+    messageSpy.mockRestore()
   })
 })

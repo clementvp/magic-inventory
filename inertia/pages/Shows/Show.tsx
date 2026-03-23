@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { router } from '@inertiajs/react'
-import { Button, List, Space, Tag, Typography } from 'antd'
+import { Button, List, message, Popconfirm, Space, Tag, Typography } from 'antd'
 import Layout from '~/components/Layout'
 
 interface RoutineItem {
@@ -21,6 +22,19 @@ interface Props {
 }
 
 export default function ShowsShow({ show }: Props) {
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = () => {
+    setDeleting(true)
+    router.delete(`/shows/${show.id}`, {
+      onError: () => {
+        setDeleting(false)
+        message.error('Une erreur est survenue lors de la suppression du spectacle')
+      },
+      onFinish: () => setDeleting(false),
+    })
+  }
+
   return (
     <Layout title={show.name}>
       <Typography.Title level={1}>{show.name}</Typography.Title>
@@ -30,9 +44,14 @@ export default function ShowsShow({ show }: Props) {
           Générer checklist
         </Button>
         <Button type="primary" onClick={() => router.visit(`/shows/${show.id}/edit`)}>Modifier</Button>
-        <Button danger disabled>
-          Supprimer
-        </Button>
+        <Popconfirm
+          title="Êtes-vous sûr de vouloir supprimer ce spectacle ?"
+          onConfirm={handleDelete}
+          okText="Oui, supprimer"
+          cancelText="Annuler"
+        >
+          <Button danger loading={deleting}>Supprimer</Button>
+        </Popconfirm>
       </Space>
 
       {show.notes && (
