@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
-import { useState } from 'react'
-import { Button, Card, Col, Empty, Pagination, Row, Space } from 'antd'
+import { useState, useMemo, useEffect } from 'react'
+import { Button, Card, Col, Empty, Input, Pagination, Row, Space } from 'antd'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 
@@ -19,23 +19,77 @@ const PAGE_SIZE = 12
 
 export default function ShowsIndex({ shows }: Props) {
   const [page, setPage] = useState(1)
-  const paginatedShows = shows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  const filteredShows = useMemo(() => {
+    if (!searchQuery.trim()) return shows
+
+    const q = searchQuery.toLowerCase()
+    return shows.filter((s) => s.name.toLowerCase().includes(q))
+  }, [shows, searchQuery])
+
+  useEffect(() => {
+    setPage(1)
+  }, [filteredShows])
+
+  const hasActiveSearch = searchQuery.trim() !== ''
+  const paginatedShows = filteredShows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <Layout>
       <div
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}
       >
-        <h1 style={{ margin: 0 }}>Mes Spectacles</h1>
-        <Button type="primary" onClick={() => router.visit('/shows/create')}>
-          Créer un spectacle
-        </Button>
+        <Space>
+          <h1 style={{ margin: 0 }}>Mes Spectacles</h1>
+          {hasActiveSearch && (
+            <span style={{ color: '#8c8c8c', fontSize: 14 }}>{filteredShows.length} résultat(s)</span>
+          )}
+        </Space>
+        <Space>
+          <Input.Search
+            placeholder="Rechercher par nom..."
+            value={searchInput}
+            onChange={(e) => {
+              setSearchInput(e.target.value)
+              if (!e.target.value) setSearchQuery('')
+            }}
+            onSearch={(val) => {
+              setSearchInput(val)
+              setSearchQuery(val)
+            }}
+            allowClear
+            style={{ width: 220 }}
+          />
+          <Button type="primary" onClick={() => router.visit('/shows/create')}>
+            Créer un spectacle
+          </Button>
+        </Space>
       </div>
 
       {shows.length === 0 ? (
         <Empty description="Aucun spectacle créé">
           <Button type="primary" onClick={() => router.visit('/shows/create')}>
             Créer votre premier spectacle
+          </Button>
+        </Empty>
+      ) : filteredShows.length === 0 ? (
+        <Empty description="Aucun spectacle ne correspond à votre recherche">
+          <Button
+            onClick={() => {
+              setSearchInput('')
+              setSearchQuery('')
+            }}
+          >
+            Réinitialiser la recherche
           </Button>
         </Empty>
       ) : (
@@ -72,7 +126,7 @@ export default function ShowsIndex({ shows }: Props) {
           <Pagination
             current={page}
             pageSize={PAGE_SIZE}
-            total={shows.length}
+            total={filteredShows.length}
             onChange={(p) => setPage(p)}
             hideOnSinglePage
             style={{ textAlign: 'center', marginTop: 16 }}

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ShowsIndex from './Index'
 import { router } from '@inertiajs/react'
@@ -95,5 +95,95 @@ describe('ShowsIndex', () => {
     expect(screen.getByText('Spectacle 1')).toBeDefined()
     expect(screen.getByText('Spectacle 12')).toBeDefined()
     expect(screen.queryByText('Spectacle 13')).toBeNull()
+  })
+
+  it('affiche l\'input de recherche dans le toolbar', () => {
+    render(<ShowsIndex shows={sampleShows} />)
+    expect(screen.getByPlaceholderText('Rechercher par nom...')).toBeDefined()
+  })
+
+  describe('Recherche par nom', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('filtre par nom après debounce 300ms', () => {
+      render(<ShowsIndex shows={sampleShows} />)
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      fireEvent.change(searchInput, { target: { value: 'Cocktail' } })
+      // Avant le debounce : tous les spectacles encore affichés
+      expect(screen.getByText('Soirée Mariage')).toBeDefined()
+      // Avancer le timer
+      act(() => vi.advanceTimersByTime(300))
+      // Après le debounce : seul "Spectacle Cocktail" reste
+      expect(screen.queryByText('Soirée Mariage')).toBeNull()
+      expect(screen.getByText('Spectacle Cocktail')).toBeDefined()
+    })
+
+    it('efface la recherche est immédiat (sans attendre le debounce)', () => {
+      render(<ShowsIndex shows={sampleShows} />)
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      // Appliquer une recherche via debounce
+      fireEvent.change(searchInput, { target: { value: 'Cocktail' } })
+      act(() => vi.advanceTimersByTime(300))
+      expect(screen.queryByText('Soirée Mariage')).toBeNull()
+      // Effacer → doit être immédiat, sans avancer le timer
+      fireEvent.change(searchInput, { target: { value: '' } })
+      expect(screen.getByText('Soirée Mariage')).toBeDefined()
+    })
+
+    it('efface la recherche → tous les spectacles réapparaissent', () => {
+      render(<ShowsIndex shows={sampleShows} />)
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      fireEvent.change(searchInput, { target: { value: 'Cocktail' } })
+      act(() => vi.advanceTimersByTime(300))
+      expect(screen.queryByText('Soirée Mariage')).toBeNull()
+      // Effacer
+      fireEvent.change(searchInput, { target: { value: '' } })
+      expect(screen.getByText('Soirée Mariage')).toBeDefined()
+    })
+
+    it('affiche le compteur de résultats quand la recherche est active', () => {
+      render(<ShowsIndex shows={sampleShows} />)
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      // Avant recherche : pas de compteur
+      expect(screen.queryByText('1 résultat(s)')).toBeNull()
+      fireEvent.change(searchInput, { target: { value: 'Cocktail' } })
+      act(() => vi.advanceTimersByTime(300))
+      // Après debounce : compteur affiché (1 seul résultat pour "Cocktail")
+      expect(screen.getByText('1 résultat(s)')).toBeDefined()
+      // Effacer : compteur disparaît
+      fireEvent.change(searchInput, { target: { value: '' } })
+      expect(screen.queryByText('1 résultat(s)')).toBeNull()
+    })
+
+    it('affiche Empty state "Aucun spectacle ne correspond" quand aucun résultat', () => {
+      render(<ShowsIndex shows={sampleShows} />)
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      fireEvent.change(searchInput, { target: { value: 'xyznonexistent' } })
+      act(() => vi.advanceTimersByTime(300))
+      expect(screen.getByText('Aucun spectacle ne correspond à votre recherche')).toBeDefined()
+      expect(screen.getByText('Réinitialiser la recherche')).toBeDefined()
+    })
+
+    it('reset la pagination à la page 1 quand la recherche change', () => {
+      const { container } = render(<ShowsIndex shows={manyShows} />)
+      act(() => vi.runAllTimers())
+      // Naviguer vers la page 2 (Spectacle 13 visible)
+      const page2Btn = container.querySelector('[class*="pagination"] li[title="2"]')
+      expect(page2Btn).not.toBeNull()
+      fireEvent.click(page2Btn!)
+      expect(screen.getByText('Spectacle 13')).toBeDefined()
+      expect(screen.queryByText('Spectacle 1')).toBeNull()
+      // Appliquer une recherche → doit revenir à la page 1
+      const searchInput = screen.getByPlaceholderText('Rechercher par nom...')
+      fireEvent.change(searchInput, { target: { value: 'Spectacle' } })
+      act(() => vi.advanceTimersByTime(300))
+      // Toutes les shows matchent "Spectacle" → retour page 1, Spectacle 1 visible
+      expect(screen.getByText('Spectacle 1')).toBeDefined()
+    })
   })
 })
