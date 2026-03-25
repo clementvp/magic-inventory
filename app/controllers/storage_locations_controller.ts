@@ -57,7 +57,7 @@ export default class StorageLocationsController {
         name: data.name,
       })
       session.flash('success', 'Lieu de stockage créé avec succès')
-      return response.redirect().toRoute('storage-locations.index')
+      return response.redirect().toRoute('storage_locations.index')
     } catch (error) {
       logger.error('StorageLocation creation failed', { error, userId: auth.user?.id })
       session.flash('error', 'Une erreur est survenue lors de la création du lieu')
@@ -99,6 +99,6 @@ export default class StorageLocationsController {
       logger.error('StorageLocation deletion failed', { error, userId: auth.user?.id })
       session.flash('error', 'Une erreur est survenue lors de la suppression du lieu')
     }
-    return response.redirect().toRoute('storage-locations.index')
+    return response.redirect().toRoute('storage_locations.index')
   }
 }
