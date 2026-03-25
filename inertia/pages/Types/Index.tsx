@@ -92,7 +92,7 @@ export default function TypesIndex({ types }: Props) {
       >
         <Form form={createForm} onFinish={handleCreate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du type est requis' }]}>
-            <Input />
+            <Input placeholder="Ex: Cartes, Cordes, Accessoires..." />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={createLoading}>Créer</Button>
@@ -108,7 +108,7 @@ export default function TypesIndex({ types }: Props) {
       >
         <Form form={editForm} onFinish={handleUpdate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du type est requis' }]}>
-            <Input />
+            <Input placeholder="Ex: Cartes, Cordes, Accessoires..." />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={editLoading}>Modifier</Button>
