@@ -10,7 +10,7 @@ import {
   UnorderedListOutlined,
   InboxOutlined,
 } from '@ant-design/icons'
-import { Link, usePage } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import type { MenuProps } from 'antd'
 import FlashMessages from './FlashMessages'
 
@@ -26,6 +26,24 @@ interface LayoutProps {
 export default function Layout({ children, title, breadcrumbLabels }: LayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const { url } = usePage()
+
+  const labelMap: Record<string, string> = {
+    categories: 'Catégories',
+    types: 'Types',
+    'storage-locations': 'Lieux de Stockage',
+    materials: 'Inventaire',
+    routines: 'Routines',
+    shows: 'Spectacles',
+    notes: 'Notes',
+    dashboard: 'Accueil',
+    profile: 'Profil',
+  }
+
+  const pageTitle = title ?? (() => {
+    const segments = url.split('/').filter(Boolean)
+    const last = segments[segments.length - 1]
+    return labelMap[last] ?? labelMap[segments[0]] ?? last ?? 'Magic Inventory'
+  })()
 
   // Déterminer la clé active du menu basée sur l'URL
   const getSelectedKey = (): string => {
@@ -48,18 +66,6 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
         title: <Link href="/dashboard">Accueil</Link>,
       },
     ]
-
-    const labelMap: Record<string, string> = {
-      categories: 'Catégories',
-      types: 'Types',
-      'storage-locations': 'Lieux de Stockage',
-      materials: 'Inventaire',
-      routines: 'Routines',
-      shows: 'Spectacles',
-      notes: 'Notes',
-      dashboard: 'Accueil',
-      profile: 'Profil',
-    }
 
     segments.forEach((segment, index) => {
       const isLast = index === segments.length - 1
@@ -122,6 +128,7 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
 
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
+      <Head title={pageTitle} />
       <FlashMessages />
 
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
