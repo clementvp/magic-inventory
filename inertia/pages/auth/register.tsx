@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { router, Link } from '@inertiajs/react'
 import { Form, Input, Button, Card, Typography, theme } from 'antd'
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
+import Icon from '~/components/Icon'
 
 const { Title, Text } = Typography
 const { useToken } = theme
@@ -64,7 +64,7 @@ export default function Register() {
             ]}
           >
             <Input
-              prefix={<UserOutlined />}
+              prefix={<Icon name="person" style={{ fontSize: 16 }} />}
               placeholder="Votre nom complet"
               size="large"
             />
@@ -98,7 +98,7 @@ export default function Register() {
             ]}
           >
             <Input.Password
-              prefix={<LockOutlined />}
+              prefix={<Icon name="lock" style={{ fontSize: 16 }} />}
               placeholder="Mot de passe"
               size="large"
             />
@@ -121,7 +121,7 @@ export default function Register() {
             ]}
           >
             <Input.Password
-              prefix={<LockOutlined />}
+              prefix={<Icon name="lock" style={{ fontSize: 16 }} />}
               placeholder="Confirmer le mot de passe"
               size="large"
             />

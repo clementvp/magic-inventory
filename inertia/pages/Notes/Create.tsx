@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 import { Button, Form, Input, Space, Spin } from 'antd'
-import { CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import Icon from '~/components/Icon'
 import Layout from '~/components/Layout'
 
 const { TextArea } = Input
@@ -45,13 +45,13 @@ export default function NotesCreate() {
           )}
           {saveStatus === 'saved' && (
             <Space>
-              <CheckCircleOutlined style={{ color: '#52c41a' }} />
+              <Icon name="check_circle" style={{ color: '#52c41a', fontSize: 16 }} />
               <span style={{ color: '#52c41a' }}>Sauvegardé</span>
             </Space>
           )}
           {saveStatus === 'error' && (
             <Space>
-              <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+              <Icon name="error" style={{ color: '#ff4d4f', fontSize: 16 }} />
               <span style={{ color: '#ff4d4f' }}>Erreur de sauvegarde</span>
             </Space>
           )}

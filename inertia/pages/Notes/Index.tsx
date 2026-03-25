@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Card, Col, Empty, Pagination, Popconfirm, Row, Space, Typography, message } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Pagination, Popconfirm, Row, Space, Typography, message } from 'antd'
+import Icon from '~/components/Icon'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 
@@ -34,19 +34,86 @@ export default function NotesIndex({ notes }: Props) {
 
   return (
     <Layout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Typography.Title level={2} style={{ margin: 0 }}>Mes Notes</Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => router.visit('/notes/create')}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}>
+        <div>
+          <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: 0 }}>Mes Notes</h1>
+          <p style={{ color: '#54433a', fontSize: 14, marginTop: 8, maxWidth: 520, lineHeight: 1.6, marginBottom: 0 }}>
+            {"Consignez vos idées, observations et secrets de scène. Un carnet de bord pour nourrir votre pratique magique."}
+          </p>
+        </div>
+        <Button type="primary" icon={<Icon name="add_circle" style={{ fontSize: 16 }} />} onClick={() => router.visit('/notes/create')}>
           Nouvelle note
         </Button>
       </div>
 
       {notes.length === 0 ? (
-        <Empty description="Aucune note créée">
-          <Button type="primary" onClick={() => router.visit('/notes/create')}>
-            Créer votre première note
-          </Button>
-        </Empty>
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          paddingTop: 48,
+        }}>
+          <div style={{
+            maxWidth: 560, width: '100%', textAlign: 'center',
+            padding: '64px 48px', borderRadius: 24,
+            background: 'rgba(246, 243, 242, 0.5)',
+            border: '1px solid rgba(218, 194, 182, 0.15)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', top: -80, right: -80,
+              width: 200, height: 200,
+              background: 'rgba(255, 222, 172, 0.15)',
+              borderRadius: '50%', filter: 'blur(60px)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{
+              position: 'absolute', bottom: -80, left: -80,
+              width: 200, height: 200,
+              background: 'rgba(254, 147, 138, 0.05)',
+              borderRadius: '50%', filter: 'blur(60px)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{ marginBottom: 32 }}>
+              <div style={{
+                width: 80, height: 80,
+                backgroundColor: '#fff8e8',
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto',
+              }}>
+                <Icon name="description" style={{ fontSize: 36, color: '#583b00' }} />
+              </div>
+            </div>
+            <h3 style={{
+              fontFamily: '"Newsreader", serif',
+              fontSize: 32, fontWeight: 400, fontStyle: 'italic',
+              color: '#292524', marginBottom: 16,
+            }}>
+              Aucune note créée
+            </h3>
+            <p style={{
+              color: '#78716c', fontSize: 16, lineHeight: 1.7,
+              maxWidth: 400, margin: '0 auto 40px',
+            }}>
+              {"Votre carnet est vierge. Notez vos idées, observations et secrets de scène avant qu'ils ne s'envolent."}
+            </p>
+            <button
+              onClick={() => router.visit('/notes/create')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '14px 28px',
+                background: 'linear-gradient(135deg, #583b00 0%, #765100 100%)',
+                color: 'white', border: 'none', borderRadius: 14,
+                fontSize: 15, fontWeight: 700,
+                cursor: 'pointer', fontFamily: '"Manrope", sans-serif',
+                boxShadow: '0 8px 24px rgba(88, 59, 0, 0.3)',
+                margin: '0 auto',
+              }}
+            >
+              <Icon name="description" style={{ fontSize: 20 }} />
+              Créer votre première note
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           <Row gutter={[16, 16]}>
@@ -76,7 +143,7 @@ export default function NotesIndex({ notes }: Props) {
                       <Button
                         danger
                         size="small"
-                        icon={<DeleteOutlined />}
+                        icon={<Icon name="delete" style={{ fontSize: 16 }} />}
                         aria-label="Supprimer"
                         loading={deletingId === note.id}
                         onClick={(e) => e.stopPropagation()}

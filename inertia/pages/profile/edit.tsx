@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { router } from '@inertiajs/react'
 import { Form, Input, Button, Card, Typography, theme, Divider, Modal } from 'antd'
-import { MailOutlined, UserOutlined } from '@ant-design/icons'
+import Icon from '~/components/Icon'
 import Layout from '~/components/Layout'
 
 const { Title } = Typography
@@ -80,7 +80,7 @@ export default function ProfileEdit({ user }: Props) {
             ]}
           >
             <Input
-              prefix={<UserOutlined />}
+              prefix={<Icon name="person" style={{ fontSize: 16 }} />}
               placeholder="Votre nom complet"
               size="large"
             />
@@ -95,7 +95,7 @@ export default function ProfileEdit({ user }: Props) {
             ]}
           >
             <Input
-              prefix={<MailOutlined />}
+              prefix={<Icon name="mail" style={{ fontSize: 16 }} />}
               placeholder="votre@email.com"
               size="large"
             />

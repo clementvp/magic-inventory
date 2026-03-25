@@ -19,6 +19,7 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
+import Icon from '~/components/Icon'
 
 interface MaterialItem {
   id: number
@@ -210,11 +211,57 @@ export default function MaterialsIndex({ materials }: Props) {
   ]
 
   const emptyState = (
-    <Empty description="Aucun matériel dans votre inventaire">
+    <div style={{ padding: '64px 0', textAlign: 'center' }}>
+      <div style={{
+        width: 80, height: 80, margin: '0 auto 24px',
+        borderRadius: '50%', backgroundColor: '#fff8e8',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon name="magic_button" style={{ fontSize: 36, color: '#583b00' }} />
+      </div>
+      <h3 style={{
+        fontFamily: '"Newsreader", serif',
+        fontSize: 24, fontWeight: 400,
+        color: '#1b1c1c', marginBottom: 8,
+      }}>
+        Inventaire vide
+      </h3>
+      <p style={{ color: '#54433a', marginBottom: 24, maxWidth: 360, margin: '0 auto 24px' }}>
+        Votre collection n'a pas encore de matériel. Commencez par ajouter votre premier accessoire.
+      </p>
       <Button type="primary" onClick={() => router.visit('/materials/create')}>
         Ajouter votre premier matériel
       </Button>
-    </Empty>
+    </div>
+  )
+
+  const cardsEmptyState = (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+      <div style={{
+        maxWidth: 560, width: '100%', textAlign: 'center',
+        padding: '64px 48px', borderRadius: 24,
+        background: 'rgba(246, 243, 242, 0.5)',
+        border: '1px solid rgba(218, 194, 182, 0.15)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 200, height: 200, background: 'rgba(255, 222, 172, 0.15)', borderRadius: '50%', filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -80, left: -80, width: 200, height: 200, background: 'rgba(254, 147, 138, 0.05)', borderRadius: '50%', filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ width: 80, height: 80, backgroundColor: '#fff8e8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+            <Icon name="magic_button" style={{ fontSize: 36, color: '#583b00' }} />
+          </div>
+        </div>
+        <h3 style={{ fontFamily: '"Newsreader", serif', fontSize: 32, fontWeight: 400, fontStyle: 'italic', color: '#292524', marginBottom: 16 }}>
+          Inventaire vide
+        </h3>
+        <p style={{ color: '#78716c', fontSize: 16, lineHeight: 1.7, maxWidth: 400, margin: '0 auto 40px' }}>
+          Votre collection est encore vide. Ajoutez votre premier accessoire pour commencer à construire votre arsenal.
+        </p>
+        <Button type="primary" icon={<Icon name="add_circle" style={{ fontSize: 16 }} />} onClick={() => router.visit('/materials/create')}>
+          Ajouter votre premier matériel
+        </Button>
+      </div>
+    </div>
   )
 
   const noResultsState = (
@@ -276,7 +323,7 @@ export default function MaterialsIndex({ materials }: Props) {
   const cardsView = (
     <>
       {materials.length === 0
-        ? emptyState
+        ? cardsEmptyState
         : filteredMaterials.length === 0
           ? noResultsState
           : cardsGrid}
@@ -286,16 +333,21 @@ export default function MaterialsIndex({ materials }: Props) {
   return (
     <Layout>
       <div
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}
       >
-        <Space>
-          <h1 style={{ margin: 0 }}>Mon Inventaire</h1>
-          {hasActiveFilters && (
-            <span style={{ color: '#8c8c8c', fontSize: 14 }}>
-              {filteredMaterials.length} résultat(s)
-            </span>
-          )}
-        </Space>
+        <div>
+          <Space>
+            <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: 0 }}>Mon Inventaire</h1>
+            {hasActiveFilters && (
+              <span style={{ color: '#8c8c8c', fontSize: 14 }}>
+                {filteredMaterials.length} résultat(s)
+              </span>
+            )}
+          </Space>
+          <p style={{ color: '#54433a', fontSize: 14, marginTop: 8, maxWidth: 520, lineHeight: 1.6, marginBottom: 0 }}>
+            {"L'ensemble de vos accessoires, livres et artifices. Retrouvez, filtrez et gérez chaque pièce de votre arsenal magique."}
+          </p>
+        </div>
         <Space>
           <Input.Search
             placeholder="Rechercher par nom..."
@@ -327,7 +379,7 @@ export default function MaterialsIndex({ materials }: Props) {
               { label: 'Cards', value: 'cards' },
             ]}
           />
-          <Button type="primary" onClick={() => router.visit('/materials/create')}>
+          <Button type="primary" icon={<Icon name="add_circle" style={{ fontSize: 16 }} />} onClick={() => router.visit('/materials/create')}>
             Ajouter un matériel
           </Button>
         </Space>

@@ -12,7 +12,7 @@ import frFR from 'antd/es/locale/fr_FR';
 const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
 
 createInertiaApp({
-  progress: { color: '#5468FF' },
+  progress: { color: '#ffba38' },
 
   title: (title) => `${title} - ${appName}`,
 
@@ -29,33 +29,52 @@ createInertiaApp({
         locale={frFR}
         theme={{
           token: {
-            // Couleurs (cohérence Apple-inspired)
-            colorPrimary: '#1890ff',      // Bleu primaire actions principales
-            colorSuccess: '#52c41a',      // Vert succès
-            colorWarning: '#faad14',      // Orange avertissement
-            colorError: '#ff4d4f',        // Rouge danger
-            colorInfo: '#1890ff',         // Bleu info
+            // Fidelity Light — MD3 tonal palette
+            colorPrimary: '#583b00',
+            colorTextBase: '#1b1c1c',
+            colorBgBase: '#fcf9f8',
+            colorBorder: '#877369',
+            colorBorderSecondary: '#dac2b6',
+            colorError: '#ba1a1a',
+            colorWarning: '#cca830',
+            colorSuccess: '#52c41a',
+            colorInfo: '#583b00',
 
-            // Typographie
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            colorBgContainer: '#ffffff',
+            colorBgLayout: '#fcf9f8',
+            colorFillAlter: '#f6f3f2',
+
+            fontFamily: '"Manrope", -apple-system, BlinkMacSystemFont, sans-serif',
             fontSize: 14,
-            fontSizeHeading1: 24,
-            fontSizeHeading2: 20,
-            fontSizeHeading3: 16,
+            fontSizeHeading1: 48,
+            fontSizeHeading2: 36,
+            fontSizeHeading3: 24,
             lineHeight: 1.5,
 
-            // Espaces blancs (Apple-inspired generous whitespace)
             padding: 16,
             margin: 16,
             paddingLG: 24,
             marginLG: 24,
 
-            // Coins & bordures
-            borderRadius: 4,
+            borderRadius: 6,
             borderRadiusLG: 8,
+            borderRadiusSM: 4,
 
-            // Animation subtile
             motionUnit: 0.1,
+          },
+          components: {
+            Table: {
+              headerBg: '#f6f3f2',
+              headerColor: '#54433a',
+              rowHoverBg: '#f6f3f2',
+              borderColor: '#dac2b6',
+            },
+            Modal: {
+              titleFontSize: 20,
+            },
+            Drawer: {
+              colorBgElevated: '#ffffff',
+            },
           },
         }}
       >
