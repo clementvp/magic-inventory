@@ -1,3 +1,4 @@
+import { Button } from 'antd'
 import Icon from './Icon'
 
 interface PageHeaderProps {
@@ -41,29 +42,13 @@ export default function PageHeader({ title, description, actionLabel, actionIcon
       </div>
 
       {actionLabel && onAction && (
-        <button
+        <Button
+          type="primary"
+          icon={<Icon name={actionIcon} style={{ fontSize: 16 }} />}
           onClick={onAction}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '6px 14px',
-            background: 'linear-gradient(135deg, #583b00 0%, #765100 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: '"Manrope", sans-serif',
-            boxShadow: '0 4px 16px rgba(88, 59, 0, 0.3)',
-            transition: 'all 0.15s ease',
-            flexShrink: 0,
-          }}
         >
-          <Icon name={actionIcon} style={{ fontSize: 16 }} />
           {actionLabel}
-        </button>
+        </Button>
       )}
     </div>
   )
