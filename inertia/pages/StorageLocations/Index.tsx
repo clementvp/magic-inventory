@@ -138,7 +138,7 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
       >
         <Form form={editForm} onFinish={handleUpdate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du lieu est requis' }]}>
-            <Input />
+            <Input placeholder="ex : Tiroir cartes, Bibliothèque, Valise close-up, Boîte pièces" />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={editLoading}>Modifier</Button>
