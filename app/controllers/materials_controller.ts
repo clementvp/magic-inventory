@@ -38,6 +38,7 @@ export default class MaterialsController {
       .preload('type')
       .preload('categories')
       .preload('storageLocation')
+      .preload('routines')
       .firstOrFail()
 
     return inertia.render('Materials/Show', {
@@ -51,6 +52,7 @@ export default class MaterialsController {
           : null,
         author: material.author,
         createdAt: material.createdAt.toISO()!,
+        routines: material.routines.map((r) => ({ id: r.id, name: r.name })),
       },
     })
   }

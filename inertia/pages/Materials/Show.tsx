@@ -15,6 +15,7 @@ interface MaterialDetail {
   storageLocation: { id: number; name: string } | null
   author: string | null
   createdAt: string
+  routines: { id: number; name: string }[]
 }
 
 interface Props {
@@ -36,7 +37,7 @@ export default function MaterialsShow({ material }: Props) {
 
   return (
     <Layout title={material.name}>
-      <Typography.Title level={1}>{material.name}</Typography.Title>
+      <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 24px' }}>{material.name}</h1>
 
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={() => router.visit(`/materials/${material.id}/edit`)}>
@@ -79,9 +80,17 @@ export default function MaterialsShow({ material }: Props) {
       </Descriptions>
 
       <Typography.Title level={2}>Utilisé dans les routines suivantes :</Typography.Title>
-      <Typography.Text type="secondary">
-        Ce matériel n'est utilisé dans aucune routine
-      </Typography.Text>
+      {material.routines.length > 0 ? (
+        <Space direction="vertical" size={4}>
+          {material.routines.map((r) => (
+            <Link key={r.id} href={`/routines/${r.id}`}>{r.name}</Link>
+          ))}
+        </Space>
+      ) : (
+        <Typography.Text type="secondary">
+          Ce matériel n'est utilisé dans aucune routine
+        </Typography.Text>
+      )}
     </Layout>
   )
 }

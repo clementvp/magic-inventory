@@ -1,6 +1,6 @@
 import { router, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Empty, Form, Input, List, Modal, Popconfirm, Typography } from 'antd'
+import { Button, Empty, Form, Input, List, Modal, Popconfirm } from 'antd'
 import Layout from '~/components/Layout'
 
 interface StorageLocationDetail {
@@ -51,7 +51,7 @@ export default function StorageLocationsShow({ location, materials }: Props) {
 
   return (
     <Layout title={location.name}>
-      <Typography.Title level={1}>{location.name}</Typography.Title>
+      <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 24px' }}>{location.name}</h1>
 
       <div style={{ marginBottom: 16 }}>
         <Button onClick={handleEdit} style={{ marginRight: 8 }}>

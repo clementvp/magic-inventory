@@ -38,7 +38,7 @@ export default function RoutinesShow({ routine }: Props) {
 
   return (
     <Layout title={routine.name}>
-      <Typography.Title level={1}>{routine.name}</Typography.Title>
+      <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 24px' }}>{routine.name}</h1>
 
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={() => router.visit(`/routines/${routine.id}/edit`)}>

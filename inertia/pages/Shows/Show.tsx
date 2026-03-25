@@ -37,7 +37,7 @@ export default function ShowsShow({ show }: Props) {
 
   return (
     <Layout title={show.name}>
-      <Typography.Title level={1}>{show.name}</Typography.Title>
+      <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 24px' }}>{show.name}</h1>
 
       <Space style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={() => router.visit(`/shows/${show.id}/checklist`)}>
