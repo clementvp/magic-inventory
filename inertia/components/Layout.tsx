@@ -47,11 +47,28 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
     return 'dashboard'
   }
 
+  const segments = url.split('/').filter(Boolean)
+
   const pageTitle = title ?? (() => {
-    const segments = url.split('/').filter(Boolean)
     const last = segments[segments.length - 1]
     return (breadcrumbLabels?.[last]) ?? LABEL_MAP[last] ?? LABEL_MAP[segments[0]] ?? last ?? 'Arcane Ledger'
   })()
+
+  const buildBreadcrumbs = () => {
+    const items: { label: string; href?: string }[] = []
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i]
+      const isLast = i === segments.length - 1
+      const href = `/${segments.slice(0, i + 1).join('/')}`
+      const label = isLast
+        ? pageTitle
+        : (breadcrumbLabels?.[seg]) ?? LABEL_MAP[seg] ?? seg
+      items.push({ label, href: isLast ? undefined : href })
+    }
+    return items
+  }
+
+  const breadcrumbs = buildBreadcrumbs()
 
   const activeKey = getSelectedKey()
 
@@ -175,6 +192,7 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
             <form method="POST" action="/logout">
               <button
                 type="submit"
+                aria-label="Se déconnecter"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -225,43 +243,20 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
         }}>
           {/* Breadcrumb */}
           <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
-            <Link
-              href="/dashboard"
-              style={{ color: '#a8a29e', textDecoration: 'none' }}
-            >
+            <Link href="/dashboard" style={{ color: '#a8a29e', textDecoration: 'none' }}>
               Dashboard
             </Link>
-            <Icon name="chevron_right" style={{ fontSize: 16, color: '#d6d3d1' }} />
-            <span style={{ color: '#7c2d12', fontWeight: 600 }}>{pageTitle}</span>
+            {breadcrumbs.map((item, i) => (
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon name="chevron_right" style={{ fontSize: 16, color: '#d6d3d1' }} />
+                {item.href
+                  ? <Link href={item.href} style={{ color: '#a8a29e', textDecoration: 'none' }}>{item.label}</Link>
+                  : <span style={{ color: '#7c2d12', fontWeight: 600 }}>{item.label}</span>
+                }
+              </span>
+            ))}
           </nav>
 
-          {/* Search */}
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Icon name="search" style={{
-              position: 'absolute',
-              left: 12,
-              fontSize: 16,
-              color: '#a8a29e',
-              pointerEvents: 'none',
-            }} />
-            <input
-              placeholder="Rechercher..."
-              style={{
-                paddingLeft: 36,
-                paddingRight: 16,
-                paddingTop: 7,
-                paddingBottom: 7,
-                borderRadius: 9999,
-                background: '#e5e2e1',
-                border: 'none',
-                fontSize: 13,
-                width: 240,
-                outline: 'none',
-                fontFamily: '"Manrope", sans-serif',
-                color: '#1b1c1c',
-              }}
-            />
-          </div>
         </header>
 
         {/* Content */}
