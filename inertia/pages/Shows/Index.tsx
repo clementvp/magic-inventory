@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useState, useMemo, useEffect } from 'react'
-import { Button, Card, Col, Empty, Input, Pagination, Row, Space } from 'antd'
+import { Button, Card, Col, Empty, Input, Pagination, Popconfirm, Row, Space } from 'antd'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 import Icon from '~/components/Icon'
@@ -22,6 +22,14 @@ export default function ShowsIndex({ shows }: Props) {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const handleDelete = (id: number) => {
+    setDeletingId(id)
+    router.delete(`/shows/${id}`, {
+      onFinish: () => setDeletingId(null),
+    })
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -175,6 +183,33 @@ export default function ShowsIndex({ shows }: Props) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') router.visit(`/shows/${s.id}`)
                   }}
+                  extra={
+                    <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
+                        onClick={() => router.visit(`/shows/${s.id}/edit`)}
+                        title="Modifier"
+                      />
+                      <Popconfirm
+                        title="Supprimer ce spectacle ?"
+                        onConfirm={() => handleDelete(s.id)}
+                        okText="Supprimer"
+                        cancelText="Annuler"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                          title="Supprimer"
+                          loading={deletingId === s.id}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Popconfirm>
+                    </span>
+                  }
                 >
                   <Card.Meta
                     title={s.name}

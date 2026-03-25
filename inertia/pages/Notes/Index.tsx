@@ -130,25 +130,35 @@ export default function NotesIndex({ notes }: Props) {
                     if (e.key === 'Enter' || e.key === ' ') router.visit(`/notes/${note.id}/edit`)
                   }}
                   extra={
-                    <Popconfirm
-                      title="Êtes-vous sûr de vouloir supprimer cette note ?"
-                      onConfirm={(e) => {
-                        e?.stopPropagation()
-                        handleDelete(note.id)
-                      }}
-                      onCancel={(e) => e?.stopPropagation()}
-                      okText="Supprimer"
-                      cancelText="Annuler"
-                    >
+                    <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
                       <Button
-                        danger
+                        type="text"
                         size="small"
-                        icon={<Icon name="delete" style={{ fontSize: 16 }} />}
-                        aria-label="Supprimer"
-                        loading={deletingId === note.id}
-                        onClick={(e) => e.stopPropagation()}
+                        icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
+                        onClick={() => router.visit(`/notes/${note.id}/edit`)}
+                        title="Modifier"
                       />
-                    </Popconfirm>
+                      <Popconfirm
+                        title="Supprimer cette note ?"
+                        onConfirm={(e) => {
+                          e?.stopPropagation()
+                          handleDelete(note.id)
+                        }}
+                        onCancel={(e) => e?.stopPropagation()}
+                        okText="Supprimer"
+                        cancelText="Annuler"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                          title="Supprimer"
+                          loading={deletingId === note.id}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Popconfirm>
+                    </span>
                   }
                 >
                   <Card.Meta

@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useState, useMemo, useEffect } from 'react'
-import { Badge, Button, Card, Col, Drawer, Empty, Input, Pagination, Row, Segmented, Select, Space, Table, Tag } from 'antd'
+import { Badge, Button, Card, Col, Drawer, Empty, Input, Pagination, Popconfirm, Row, Segmented, Select, Space, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
@@ -22,6 +22,15 @@ const PAGE_SIZE = 12
 export default function RoutinesIndex({ routines }: Props) {
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [tablePageSize, setTablePageSize] = useState(50)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const handleDelete = (id: number) => {
+    setDeletingId(id)
+    router.delete(`/routines/${id}`, {
+      onFinish: () => setDeletingId(null),
+    })
+  }
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
@@ -94,6 +103,35 @@ export default function RoutinesIndex({ routines }: Props) {
       key: 'createdAt',
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
       render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      align: 'right' as const,
+      render: (_: unknown, record: RoutineItem) => (
+        <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }} onClick={(e) => e.stopPropagation()}>
+          <Button
+            type="text"
+            icon={<Icon name="edit" style={{ fontSize: 18, color: '#583b00' }} />}
+            onClick={() => router.visit(`/routines/${record.id}/edit`)}
+            title="Modifier"
+          />
+          <Popconfirm
+            title="Supprimer cette routine ?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Supprimer"
+            cancelText="Annuler"
+            okButtonProps={{ danger: true }}
+          >
+            <Button
+              type="text"
+              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+              title="Supprimer"
+              loading={deletingId === record.id}
+            />
+          </Popconfirm>
+        </span>
+      ),
     },
   ]
 
@@ -185,7 +223,37 @@ export default function RoutinesIndex({ routines }: Props) {
       <Row gutter={[16, 16]}>
         {paginatedRoutines.map((r) => (
           <Col xs={24} sm={12} md={8} key={r.id}>
-            <Card hoverable onClick={() => router.visit(`/routines/${r.id}`)}>
+            <Card
+              hoverable
+              onClick={() => router.visit(`/routines/${r.id}`)}
+              extra={
+                <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
+                    onClick={() => router.visit(`/routines/${r.id}/edit`)}
+                    title="Modifier"
+                  />
+                  <Popconfirm
+                    title="Supprimer cette routine ?"
+                    onConfirm={() => handleDelete(r.id)}
+                    okText="Supprimer"
+                    cancelText="Annuler"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                      title="Supprimer"
+                      loading={deletingId === r.id}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Popconfirm>
+                </span>
+              }
+            >
               <Card.Meta
                 title={r.name}
                 description={
@@ -312,7 +380,7 @@ export default function RoutinesIndex({ routines }: Props) {
           dataSource={filteredRoutines}
           columns={columns}
           rowKey="id"
-          pagination={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: ['25', '50', '100'] }}
+          pagination={{ pageSize: tablePageSize, showSizeChanger: true, pageSizeOptions: ['25', '50', '100'], onShowSizeChange: (_, size) => setTablePageSize(size) }}
           onRow={(record) => ({
             onClick: () => router.visit(`/routines/${record.id}`),
             style: { cursor: 'pointer' },

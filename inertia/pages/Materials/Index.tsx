@@ -9,6 +9,7 @@ import {
   Empty,
   Input,
   Pagination,
+  Popconfirm,
   Row,
   Segmented,
   Select,
@@ -37,6 +38,15 @@ interface Props {
 
 export default function MaterialsIndex({ materials }: Props) {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [tablePageSize, setTablePageSize] = useState(50)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const handleDelete = (id: number) => {
+    setDeletingId(id)
+    router.delete(`/materials/${id}`, {
+      onFinish: () => setDeletingId(null),
+    })
+  }
   const [cardsPage, setCardsPage] = useState(1)
 
   // Search state — input affiché vs query debouncée (300ms)
@@ -206,7 +216,31 @@ export default function MaterialsIndex({ materials }: Props) {
     {
       title: 'Actions',
       key: 'actions',
-      render: () => null,
+      align: 'right' as const,
+      render: (_: unknown, record: MaterialItem) => (
+        <span style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }} onClick={(e) => e.stopPropagation()}>
+          <Button
+            type="text"
+            icon={<Icon name="edit" style={{ fontSize: 18, color: '#583b00' }} />}
+            onClick={() => router.visit(`/materials/${record.id}/edit`)}
+            title="Modifier"
+          />
+          <Popconfirm
+            title="Supprimer ce matériel ?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Supprimer"
+            cancelText="Annuler"
+            okButtonProps={{ danger: true }}
+          >
+            <Button
+              type="text"
+              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+              title="Supprimer"
+              loading={deletingId === record.id}
+            />
+          </Popconfirm>
+        </span>
+      ),
     },
   ]
 
@@ -296,7 +330,37 @@ export default function MaterialsIndex({ materials }: Props) {
       <Row gutter={[16, 16]}>
         {paginatedMaterials.map((m) => (
           <Col xs={24} sm={12} md={8} key={m.id}>
-            <Card hoverable onClick={() => router.visit(`/materials/${m.id}`)}>
+            <Card
+              hoverable
+              onClick={() => router.visit(`/materials/${m.id}`)}
+              extra={
+                <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
+                    onClick={() => router.visit(`/materials/${m.id}/edit`)}
+                    title="Modifier"
+                  />
+                  <Popconfirm
+                    title="Supprimer ce matériel ?"
+                    onConfirm={() => handleDelete(m.id)}
+                    okText="Supprimer"
+                    cancelText="Annuler"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                      title="Supprimer"
+                      loading={deletingId === m.id}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Popconfirm>
+                </span>
+              }
+            >
               <Card.Meta
                 title={m.name}
                 description={
@@ -404,9 +468,10 @@ export default function MaterialsIndex({ materials }: Props) {
           columns={columns}
           rowKey="id"
           pagination={{
-            pageSize: 50,
+            pageSize: tablePageSize,
             showSizeChanger: true,
             pageSizeOptions: ['25', '50', '100'],
+            onShowSizeChange: (_, size) => setTablePageSize(size),
           }}
           onRow={(record) => ({
             onClick: () => router.visit(`/materials/${record.id}`),
