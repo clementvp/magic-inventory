@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Card, Col, Empty, Pagination, Row, Space, Typography } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Empty, Pagination, Popconfirm, Row, Space, Typography, message } from 'antd'
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 
@@ -20,6 +20,17 @@ const PAGE_SIZE = 20
 
 export default function NotesIndex({ notes }: Props) {
   const [page, setPage] = useState(1)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const handleDelete = (id: number) => {
+    setDeletingId(id)
+    router.delete(`/notes/${id}`, {
+      onError: () => {
+        setDeletingId(null)
+        message.error('Une erreur est survenue lors de la suppression')
+      },
+    })
+  }
 
   return (
     <Layout>
@@ -51,6 +62,27 @@ export default function NotesIndex({ notes }: Props) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') router.visit(`/notes/${note.id}/edit`)
                   }}
+                  extra={
+                    <Popconfirm
+                      title="Êtes-vous sûr de vouloir supprimer cette note ?"
+                      onConfirm={(e) => {
+                        e?.stopPropagation()
+                        handleDelete(note.id)
+                      }}
+                      onCancel={(e) => e?.stopPropagation()}
+                      okText="Supprimer"
+                      cancelText="Annuler"
+                    >
+                      <Button
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        aria-label="Supprimer"
+                        loading={deletingId === note.id}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </Popconfirm>
+                  }
                 >
                   <Card.Meta
                     title={note.title || '(Sans titre)'}

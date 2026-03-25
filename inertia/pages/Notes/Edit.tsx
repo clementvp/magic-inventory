@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
-import { Button, Form, Input, Space, Spin } from 'antd'
+import { Button, Form, Input, Popconfirm, Space, Spin, message } from 'antd'
 import { CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import Layout from '~/components/Layout'
 
@@ -22,6 +22,7 @@ export default function NotesEdit({ note }: Props) {
   const [title, setTitle] = useState(note.title ?? '')
   const [content, setContent] = useState(note.content ?? '')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [deleting, setDeleting] = useState(false)
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -44,6 +45,16 @@ export default function NotesEdit({ note }: Props) {
 
     return () => clearTimeout(timer)
   }, [title, content, note.id])
+
+  const handleDelete = () => {
+    setDeleting(true)
+    router.delete(`/notes/${note.id}`, {
+      onError: () => {
+        setDeleting(false)
+        message.error('Une erreur est survenue lors de la suppression')
+      },
+    })
+  }
 
   return (
     <Layout title="Modifier" breadcrumbLabels={{ [String(note.id)]: title || 'Note sans titre' }}>
@@ -93,7 +104,17 @@ export default function NotesEdit({ note }: Props) {
         </Form.Item>
 
         <Form.Item>
-          <Button onClick={() => router.visit('/notes')}>Retour aux notes</Button>
+          <Space>
+            <Button onClick={() => router.visit('/notes')}>Retour aux notes</Button>
+            <Popconfirm
+              title="Êtes-vous sûr de vouloir supprimer cette note ?"
+              onConfirm={handleDelete}
+              okText="Supprimer"
+              cancelText="Annuler"
+            >
+              <Button danger loading={deleting}>Supprimer</Button>
+            </Popconfirm>
+          </Space>
         </Form.Item>
       </Form>
     </Layout>

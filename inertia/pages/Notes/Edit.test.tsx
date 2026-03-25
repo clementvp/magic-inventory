@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import NotesEdit from './Edit'
 import { router } from '@inertiajs/react'
 import Layout from '~/components/Layout'
 
 vi.mock('@inertiajs/react', () => ({
-  router: { put: vi.fn(), visit: vi.fn() },
+  router: { put: vi.fn(), visit: vi.fn(), delete: vi.fn() },
   usePage: () => ({ url: '/notes/1/edit', props: { flash: {} } }),
 }))
 
@@ -173,5 +174,54 @@ describe('NotesEdit', () => {
       vi.advanceTimersByTime(2000)
     })
     expect(screen.getByText('Erreur de sauvegarde')).toBeInTheDocument()
+  })
+
+  describe('suppression', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      vi.useRealTimers()
+    })
+
+    it('affiche le bouton "Supprimer"', () => {
+      render(<NotesEdit note={sampleNote} />)
+      expect(screen.getByRole('button', { name: /supprimer/i })).toBeInTheDocument()
+    })
+
+    it("ouvre un Popconfirm au clic 'Supprimer'", async () => {
+      render(<NotesEdit note={sampleNote} />)
+      await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+      expect(await screen.findByText("Êtes-vous sûr de vouloir supprimer cette note ?")).toBeInTheDocument()
+    })
+
+    it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+      render(<NotesEdit note={sampleNote} />)
+      await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+      const supprimerButtons = await screen.findAllByRole('button', { name: /supprimer/i })
+      await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
+      expect(router.delete).toHaveBeenCalledWith(
+        '/notes/1',
+        expect.objectContaining({ onError: expect.any(Function) })
+      )
+    })
+
+    it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+      render(<NotesEdit note={sampleNote} />)
+      await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+      const annulerButton = await screen.findByRole('button', { name: /annuler/i })
+      await userEvent.click(annulerButton)
+      expect(router.delete).not.toHaveBeenCalled()
+    })
+
+    it("le bouton Supprimer redevient actif après une erreur de suppression", async () => {
+      vi.mocked(router.delete).mockImplementation((_url, callbacks) => {
+        (callbacks as { onError?: () => void }).onError?.()
+        return undefined as unknown as ReturnType<typeof router.delete>
+      })
+      render(<NotesEdit note={sampleNote} />)
+      await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
+      const supprimerButtons = await screen.findAllByRole('button', { name: /supprimer/i })
+      await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
+      expect(screen.getByRole('button', { name: /supprimer/i })).not.toBeDisabled()
+    })
   })
 })

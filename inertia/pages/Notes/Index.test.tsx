@@ -6,7 +6,7 @@ import NotesIndex from './Index'
 import { router } from '@inertiajs/react'
 
 vi.mock('@inertiajs/react', () => ({
-  router: { visit: vi.fn() },
+  router: { visit: vi.fn(), delete: vi.fn() },
   usePage: () => ({ url: '/notes', props: { flash: {} } }),
 }))
 
@@ -151,5 +151,60 @@ describe('NotesIndex', () => {
     card.focus()
     await userEvent.keyboard(' ')
     expect(router.visit).toHaveBeenCalledWith('/notes/1/edit')
+  })
+
+  it('affiche le bouton Supprimer sur chaque note', () => {
+    render(<NotesIndex notes={sampleNotes} />)
+    expect(screen.getAllByRole('button', { name: /supprimer/i })).toHaveLength(2)
+  })
+
+  it("ouvre un Popconfirm au clic 'Supprimer' sur une note", async () => {
+    render(<NotesIndex notes={sampleNotes} />)
+    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerBtns[0])
+    expect(await screen.findByText("Êtes-vous sûr de vouloir supprimer cette note ?")).toBeInTheDocument()
+  })
+
+  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+    render(<NotesIndex notes={sampleNotes} />)
+    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerBtns[0])
+    const confirmBtns = await screen.findAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(confirmBtns[confirmBtns.length - 1])
+    expect(router.delete).toHaveBeenCalledWith(
+      '/notes/1',
+      expect.objectContaining({ onError: expect.any(Function) })
+    )
+  })
+
+  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+    render(<NotesIndex notes={sampleNotes} />)
+    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerBtns[0])
+    const annulerButton = await screen.findByRole('button', { name: /annuler/i })
+    await userEvent.click(annulerButton)
+    expect(router.delete).not.toHaveBeenCalled()
+  })
+
+  it("clic 'Supprimer' ne navigue pas vers /notes/:id/edit (stopPropagation)", async () => {
+    render(<NotesIndex notes={sampleNotes} />)
+    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerBtns[0])
+    expect(router.visit).not.toHaveBeenCalled()
+  })
+
+  it("les boutons Supprimer sont de nouveau actifs après une erreur de suppression", async () => {
+    vi.mocked(router.delete).mockImplementation((_url, callbacks) => {
+      (callbacks as { onError?: () => void }).onError?.()
+      return undefined as unknown as ReturnType<typeof router.delete>
+    })
+    render(<NotesIndex notes={sampleNotes} />)
+    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(supprimerBtns[0])
+    const confirmBtns = await screen.findAllByRole('button', { name: /supprimer/i })
+    await userEvent.click(confirmBtns[confirmBtns.length - 1])
+    screen.getAllByRole('button', { name: /supprimer/i }).forEach((btn) => {
+      expect(btn).not.toBeDisabled()
+    })
   })
 })
