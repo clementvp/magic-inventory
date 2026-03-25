@@ -1,3 +1,7 @@
+# Design / local tooling
+design.md
+stitch_types_de_mat_riel/
+
 # Dependencies and AdonisJS build
 node_modules
 build
