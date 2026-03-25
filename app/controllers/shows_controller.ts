@@ -214,11 +214,17 @@ export default class ShowsController {
       .where('id', params.id)
       .firstOrFail()
 
-    // Vérifier que la routine appartient à l'utilisateur
+    // Vérifier que la routine appartient à l'utilisateur et est bien liée à ce spectacle
     await Routine.query()
       .where('id', params.routineId)
       .where('user_id', auth.user!.id)
       .firstOrFail()
+
+    const linked = await show.related('routines').query().where('id', params.routineId).first()
+    if (!linked) {
+      session.flash('error', 'Cette routine n\'est pas liée à ce spectacle')
+      return response.redirect().back()
+    }
 
     try {
       await show.related('routines').detach([parseInt(params.routineId, 10)])

@@ -223,11 +223,17 @@ export default class RoutinesController {
       .where('id', params.id)
       .firstOrFail()
 
-    // Vérifier que le matériel appartient à l'utilisateur
+    // Vérifier que le matériel appartient à l'utilisateur et est bien lié à cette routine
     await Material.query()
       .where('id', params.materialId)
       .where('user_id', auth.user!.id)
       .firstOrFail()
+
+    const linked = await routine.related('materials').query().where('id', params.materialId).first()
+    if (!linked) {
+      session.flash('error', 'Ce matériel n\'est pas lié à cette routine')
+      return response.redirect().back()
+    }
 
     try {
       await routine.related('materials').detach([Number(params.materialId)])
