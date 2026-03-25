@@ -48,6 +48,7 @@ development_status:
   1-4-gestion-du-profil-utilisateur: done
   1-5-suppression-de-compte-rgpd: done
   1-6-export-des-donnees-rgpd: done
+  1-7-deconnexion: ready-for-dev
   epic-1-retrospective: optional
 
   # Epic 2: Organisation et Taxonomie
