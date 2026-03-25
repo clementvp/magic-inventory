@@ -94,8 +94,8 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Capture Spontanée d'Idées
-  epic-6: backlog
-  6-1-creation-de-note-avec-auto-save: backlog
+  epic-6: in-progress
+  6-1-creation-de-note-avec-auto-save: done
   6-2-liste-des-notes: backlog
   6-3-modification-dune-note: backlog
   6-4-suppression-dune-note: backlog

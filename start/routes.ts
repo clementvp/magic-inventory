@@ -20,6 +20,7 @@ const StorageLocationsController = () => import('#controllers/storage_locations_
 const MaterialsController = () => import('#controllers/materials_controller')
 const RoutinesController = () => import('#controllers/routines_controller')
 const ShowsController = () => import('#controllers/shows_controller')
+const NotesController = () => import('#controllers/notes_controller')
 
 // Page d'accueil publique avec redirection intelligente
 router.get('/', [HomeController, 'index']).as('home')
@@ -54,6 +55,7 @@ router
     router.post('/shows/:id/routines', [ShowsController, 'attachRoutine'])
     router.delete('/shows/:id/routines/:routineId', [ShowsController, 'detachRoutine'])
     router.get('/shows/:id/checklist', [ShowsController, 'checklist'])
+    router.resource('notes', NotesController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
   })
   .use(middleware.auth())
 
