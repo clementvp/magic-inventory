@@ -101,4 +101,11 @@ describe('TypesIndex', () => {
       expect(router.delete).toHaveBeenCalledWith('/types/1')
     })
   })
+
+  it('renders title and button as siblings in the same flex container', () => {
+    render(<TypesIndex types={mockTypes} />)
+    const heading = screen.getByRole('heading', { name: /types/i })
+    const button = screen.getByRole('button', { name: /ajouter un type/i })
+    expect(heading.parentElement).toBe(button.parentElement)
+  })
 })

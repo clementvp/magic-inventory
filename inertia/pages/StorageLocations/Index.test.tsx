@@ -110,4 +110,11 @@ describe('StorageLocationsIndex', () => {
       expect.any(Object)
     )
   })
+
+  it('renders title and button as siblings in the same flex container', () => {
+    render(<StorageLocationsIndex storageLocations={mockLocations} />)
+    const heading = screen.getByRole('heading', { name: /lieux de stockage/i })
+    const button = screen.getByRole('button', { name: /ajouter un lieu/i })
+    expect(heading.parentElement).toBe(button.parentElement)
+  })
 })

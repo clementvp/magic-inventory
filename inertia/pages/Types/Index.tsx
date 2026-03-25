@@ -78,10 +78,14 @@ export default function TypesIndex({ types }: Props) {
 
   return (
     <Layout>
-      <h1>Types</h1>
-      <Button type="primary" onClick={() => setCreateModalOpen(true)} style={{ marginBottom: 16 }}>
-        Ajouter un type
-      </Button>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}
+      >
+        <h1 style={{ margin: 0 }}>Types</h1>
+        <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+          Ajouter un type
+        </Button>
+      </div>
       <Table
         dataSource={types}
         columns={columns}

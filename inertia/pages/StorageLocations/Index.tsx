@@ -95,10 +95,14 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
 
   return (
     <Layout>
-      <h1>Lieux de Stockage</h1>
-      <Button type="primary" onClick={() => setCreateModalOpen(true)} style={{ marginBottom: 16 }}>
-        Ajouter un lieu
-      </Button>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}
+      >
+        <h1 style={{ margin: 0 }}>Lieux de Stockage</h1>
+        <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+          Ajouter un lieu
+        </Button>
+      </div>
       <Table
         dataSource={storageLocations}
         columns={columns}

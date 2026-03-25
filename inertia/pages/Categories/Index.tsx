@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd'
+import { Button, Empty, Form, Input, Modal, Popconfirm, Table } from 'antd'
 import Layout from '~/components/Layout'
 
 interface Category {
@@ -89,16 +89,32 @@ export default function CategoriesIndex({ categories }: Props) {
 
   return (
     <Layout>
-      <h1>Catégories</h1>
-      <Button
-        type="primary"
-        onClick={() => setCreateModalOpen(true)}
-        style={{ marginBottom: 16 }}
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}
       >
-        Ajouter une catégorie
-      </Button>
+        <h1 style={{ margin: 0 }}>Catégories</h1>
+        <Button
+          type="primary"
+          onClick={() => setCreateModalOpen(true)}
+        >
+          Ajouter une catégorie
+        </Button>
+      </div>
 
-      <Table dataSource={categories} columns={columns} rowKey="id" />
+      <Table
+        dataSource={categories}
+        columns={columns}
+        rowKey="id"
+        locale={{
+          emptyText: (
+            <Empty description="Aucune catégorie créée">
+              <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+                Ajouter votre première catégorie
+              </Button>
+            </Empty>
+          ),
+        }}
+      />
 
       <Modal
         title="Ajouter une catégorie"

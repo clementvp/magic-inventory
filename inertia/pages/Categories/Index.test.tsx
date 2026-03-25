@@ -147,4 +147,11 @@ describe('CategoriesIndex Page', () => {
       expect(screen.getByRole('heading', { name: /catégories/i })).toBeInTheDocument()
     })
   })
+
+  it('renders title and button as siblings in the same flex container', () => {
+    render(<CategoriesIndex categories={mockCategories} />)
+    const heading = screen.getByRole('heading', { name: /catégories/i })
+    const button = screen.getByRole('button', { name: /ajouter une catégorie/i })
+    expect(heading.parentElement).toBe(button.parentElement)
+  })
 })
