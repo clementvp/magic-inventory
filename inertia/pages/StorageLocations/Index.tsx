@@ -1,6 +1,6 @@
 import { router, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd'
+import { Button, Empty, Form, Input, Modal, Popconfirm, Table } from 'antd'
 import Layout from '~/components/Layout'
 
 interface StorageLocationItem {
@@ -99,7 +99,20 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
       <Button type="primary" onClick={() => setCreateModalOpen(true)} style={{ marginBottom: 16 }}>
         Ajouter un lieu
       </Button>
-      <Table dataSource={storageLocations} columns={columns} rowKey="id" />
+      <Table
+        dataSource={storageLocations}
+        columns={columns}
+        rowKey="id"
+        locale={{
+          emptyText: (
+            <Empty description="Aucun lieu de stockage créé">
+              <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+                Ajouter votre premier lieu
+              </Button>
+            </Empty>
+          ),
+        }}
+      />
 
       <Modal
         title="Ajouter un lieu"
