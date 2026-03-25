@@ -257,9 +257,22 @@ export default function MaterialsIndex({ materials }: Props) {
         <p style={{ color: '#78716c', fontSize: 16, lineHeight: 1.7, maxWidth: 400, margin: '0 auto 40px' }}>
           Votre collection est encore vide. Ajoutez votre premier accessoire pour commencer à construire votre arsenal.
         </p>
-        <Button type="primary" icon={<Icon name="add_circle" style={{ fontSize: 16 }} />} onClick={() => router.visit('/materials/create')}>
+        <button
+            onClick={() => router.visit('/materials/create')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '14px 28px',
+              background: 'linear-gradient(135deg, #583b00 0%, #765100 100%)',
+              color: 'white', border: 'none', borderRadius: 14,
+              fontSize: 15, fontWeight: 700,
+              cursor: 'pointer', fontFamily: '"Manrope", sans-serif',
+              boxShadow: '0 8px 24px rgba(88, 59, 0, 0.3)',
+              margin: '0 auto',
+            }}
+        >
+          <Icon name="magic_button" style={{ fontSize: 20 }} />
           Ajouter votre premier matériel
-        </Button>
+        </button>
       </div>
     </div>
   )

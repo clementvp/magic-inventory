@@ -112,7 +112,7 @@ export default function RoutinesIndex({ routines }: Props) {
       <p style={{ color: '#54433a', maxWidth: 360, margin: '0 auto 24px' }}>
         Commencez par assembler vos tours favoris pour créer une routine inoubliable.
       </p>
-      <Button type="primary" icon={<Icon name="add_circle" style={{ fontSize: 16 }} />} onClick={() => router.visit('/routines/create')}>
+      <Button type="primary" onClick={() => router.visit('/routines/create')}>
         Créer votre première routine
       </Button>
     </div>
@@ -167,7 +167,7 @@ export default function RoutinesIndex({ routines }: Props) {
             margin: '0 auto',
           }}
         >
-          <Icon name="add_circle" style={{ fontSize: 20 }} />
+          <Icon name="auto_fix_high" style={{ fontSize: 20 }} />
           Créer votre première routine
         </button>
       </div>
