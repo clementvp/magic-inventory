@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Form, Input, Space, Spin } from 'antd'
 import { CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import Layout from '~/components/Layout'
@@ -22,8 +22,13 @@ export default function NotesEdit({ note }: Props) {
   const [title, setTitle] = useState(note.title ?? '')
   const [content, setContent] = useState(note.content ?? '')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const isFirstRender = useRef(true)
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     const timer = setTimeout(() => {
       setSaveStatus('saving')
       router.put(
@@ -38,10 +43,10 @@ export default function NotesEdit({ note }: Props) {
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [title, content])
+  }, [title, content, note.id])
 
   return (
-    <Layout title={title || 'Note sans titre'}>
+    <Layout title="Modifier" breadcrumbLabels={{ [String(note.id)]: title || 'Note sans titre' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1 style={{ margin: 0 }}>{title || 'Note sans titre'}</h1>
         <div>
@@ -70,6 +75,7 @@ export default function NotesEdit({ note }: Props) {
         <Form.Item label="Titre">
           <Input
             aria-label="Titre"
+            autoFocus
             placeholder="Titre de la note..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
