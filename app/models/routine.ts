@@ -33,6 +33,7 @@ export default class Routine extends BaseModel {
     pivotForeignKey: 'routine_id',
     relatedKey: 'id',
     pivotRelatedForeignKey: 'category_id',
+    pivotTimestamps: { createdAt: 'created_at', updatedAt: false },
   })
   declare categories: ManyToMany<typeof Category>
 
@@ -42,6 +43,7 @@ export default class Routine extends BaseModel {
     pivotForeignKey: 'routine_id',
     relatedKey: 'id',
     pivotRelatedForeignKey: 'material_id',
+    pivotTimestamps: { createdAt: 'created_at', updatedAt: false },
   })
   declare materials: ManyToMany<typeof Material>
 }
