@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import RoutinesIndex from './Index'
 import { router } from '@inertiajs/react'
@@ -70,8 +70,9 @@ describe('RoutinesIndex', () => {
     expect(screen.getByText('Scène')).toBeDefined()
   })
 
-  it('affiche "Aucune catégorie" si la routine n\'a pas de catégorie', () => {
+  it('affiche "Aucune catégorie" si la routine n\'a pas de catégorie (vue Cards)', async () => {
     render(<RoutinesIndex routines={sampleRoutines} />)
+    await userEvent.click(screen.getByText('Cards'))
     expect(screen.getByText('Aucune catégorie')).toBeDefined()
   })
 
@@ -82,6 +83,7 @@ describe('RoutinesIndex', () => {
 
   it('clic sur une Card navigue vers /routines/:id', async () => {
     render(<RoutinesIndex routines={sampleRoutines} />)
+    await userEvent.click(screen.getByText('Cards'))
     const cardEl = screen.getByText('Apparition du foulard').closest('.ant-card')!
     await userEvent.click(cardEl)
     expect(router.visit).toHaveBeenCalledWith('/routines/1')
@@ -99,10 +101,11 @@ describe('RoutinesIndex', () => {
     expect(router.visit).toHaveBeenCalledWith('/routines/create')
   })
 
-  it('Pagination absente si moins de 12 routines (hideOnSinglePage)', () => {
+  it('Pagination absente si moins de 12 routines (hideOnSinglePage)', async () => {
     const { container } = render(<RoutinesIndex routines={sampleRoutines} />)
-    // hideOnSinglePage retourne null quand total <= pageSize — aucun nœud pagination dans le DOM
-    expect(container.querySelector('[class*="pagination"]')).toBeNull()
+    await userEvent.click(screen.getByText('Cards'))
+    // hideOnSinglePage retourne null quand total <= pageSize — aucun nœud Pagination custom dans le DOM
+    expect(container.querySelector('.ant-pagination')).toBeNull()
   })
 
   it('affiche la pagination avec 13+ routines (AC 4)', () => {
@@ -110,8 +113,9 @@ describe('RoutinesIndex', () => {
     expect(container.querySelector('[class*="pagination"]')).not.toBeNull()
   })
 
-  it('la page 1 affiche les 12 premières routines, pas la 13ème (AC 4)', () => {
+  it('la page 1 affiche les 12 premières routines, pas la 13ème (AC 4)', async () => {
     render(<RoutinesIndex routines={manyRoutines} />)
+    await userEvent.click(screen.getByText('Cards'))
     expect(screen.getByText('Routine 1')).toBeDefined()
     expect(screen.getByText('Routine 12')).toBeDefined()
     expect(screen.queryByText('Routine 13')).toBeNull()
@@ -177,7 +181,9 @@ describe('RoutinesIndex', () => {
   it('ouvre le Drawer au clic "Filtres" (AC: 4)', async () => {
     render(<RoutinesIndex routines={sampleRoutines} />)
     await userEvent.click(screen.getByText('Filtres'))
-    expect(screen.getByText('Catégorie(s)')).toBeDefined()
+    await waitFor(() => {
+      expect(screen.getAllByText('Catégorie(s)').length).toBeGreaterThan(0)
+    })
   })
 
   // [L1] Bouton "Réinitialiser les filtres" désactivé quand aucun filtre actif
@@ -240,8 +246,10 @@ describe('RoutinesIndex', () => {
   it('reset pagination à la page 1 quand les filtres changent (AC: 8)', async () => {
     vi.useFakeTimers()
     const { container } = render(<RoutinesIndex routines={manyRoutines} />)
+    // Passer en vue Cards pour avoir la pagination custom
+    fireEvent.click(screen.getByText('Cards'))
     act(() => vi.runAllTimers())
-    const page2Btn = container.querySelector('[class*="pagination"] li[title="2"]')
+    const page2Btn = container.querySelector('.ant-pagination li[title="2"]')
     expect(page2Btn).not.toBeNull()
     fireEvent.click(page2Btn!)
     // Appliquer une recherche → doit revenir à la page 1

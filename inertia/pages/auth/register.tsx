@@ -79,7 +79,7 @@ export default function Register() {
             ]}
           >
             <Input
-              prefix={<MailOutlined />}
+              prefix={<Icon name="mail" style={{ fontSize: 16 }} />}
               placeholder="votre@email.com"
               size="large"
             />

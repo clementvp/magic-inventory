@@ -83,8 +83,8 @@ describe('MaterialsIndex', () => {
 
   it('affiche empty state quand aucun matériel', () => {
     render(<MaterialsIndex materials={[]} />)
-    expect(screen.getByText('Aucun matériel dans votre inventaire')).toBeInTheDocument()
-    expect(screen.getByText('Ajouter votre premier matériel')).toBeInTheDocument()
+    expect(screen.getByText('Inventaire vide')).toBeInTheDocument()
+    expect(screen.getAllByText('Ajouter votre premier matériel').length).toBeGreaterThan(0)
   })
 
   it('navigue vers /materials/create depuis empty state', async () => {
@@ -176,7 +176,7 @@ describe('MaterialsIndex — Vue Switcher', () => {
   it("affiche l'empty state en vue Cards quand aucun matériel", async () => {
     render(<MaterialsIndex materials={[]} />)
     await userEvent.click(screen.getByText('Cards'))
-    expect(screen.getByText('Aucun matériel dans votre inventaire')).toBeInTheDocument()
+    expect(screen.getByText('Inventaire vide')).toBeInTheDocument()
   })
 })
 

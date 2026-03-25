@@ -48,10 +48,10 @@ describe('StorageLocationsIndex', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('ouvre le modal de modification au clic Modifier', async () => {
+  it('ouvre le modal de modification au clic bouton edit', async () => {
     const user = userEvent.setup()
     render(<StorageLocationsIndex storageLocations={mockLocations} />)
-    const modifierButtons = await screen.findAllByText('Modifier')
+    const modifierButtons = screen.getAllByTitle('Modifier')
     await user.click(modifierButtons[0])
     expect(screen.getByText('Modifier un lieu')).toBeInTheDocument()
   })
@@ -59,8 +59,8 @@ describe('StorageLocationsIndex', () => {
   it('boutons Supprimer sont présents', async () => {
     render(<StorageLocationsIndex storageLocations={mockLocations} />)
     await waitFor(() => {
-      const dangerButtons = screen.getAllByText('Supprimer')
-      expect(dangerButtons.length).toBe(2)
+      const deleteButtons = screen.getAllByTitle('Supprimer')
+      expect(deleteButtons.length).toBe(2)
     })
   })
 
@@ -83,22 +83,19 @@ describe('StorageLocationsIndex', () => {
   it('appelle router.delete lors de la confirmation suppression', async () => {
     const user = userEvent.setup()
     render(<StorageLocationsIndex storageLocations={mockLocations} />)
-    const deleteButtons = await screen.findAllByRole('button', { name: 'Supprimer' })
+    const deleteButtons = screen.getAllByTitle('Supprimer')
     await user.click(deleteButtons[0])
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Supprimer' }).length).toBeGreaterThan(
-        deleteButtons.length
-      )
+      expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument()
     })
-    const allDeleteButtons = screen.getAllByRole('button', { name: 'Supprimer' })
-    await user.click(allDeleteButtons[allDeleteButtons.length - 1])
+    await user.click(screen.getByRole('button', { name: 'Supprimer' }))
     expect(router.delete).toHaveBeenCalledWith('/storage-locations/1', expect.any(Object))
   })
 
   it('appelle router.put lors de la soumission modification', async () => {
     const user = userEvent.setup()
     render(<StorageLocationsIndex storageLocations={mockLocations} />)
-    const modifierButtons = await screen.findAllByText('Modifier')
+    const modifierButtons = screen.getAllByTitle('Modifier')
     await user.click(modifierButtons[0])
     const dialog = screen.getByRole('dialog')
     expect(dialog).toBeInTheDocument()
@@ -111,10 +108,10 @@ describe('StorageLocationsIndex', () => {
     )
   })
 
-  it('renders title and button as siblings in the same flex container', () => {
+  it('renders title and button in the same header section', () => {
     render(<StorageLocationsIndex storageLocations={mockLocations} />)
     const heading = screen.getByRole('heading', { name: /lieux de stockage/i })
     const button = screen.getByRole('button', { name: /ajouter un lieu/i })
-    expect(heading.parentElement).toBe(button.parentElement)
+    expect(heading.parentElement?.parentElement).toContain(button)
   })
 })

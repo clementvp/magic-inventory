@@ -27,9 +27,9 @@ describe('TypesIndex', () => {
     vi.clearAllMocks()
   })
 
-  it('affiche le titre Types', () => {
+  it('affiche le titre Types de Matériel', () => {
     render(<TypesIndex types={mockTypes} />)
-    expect(screen.getByRole('heading', { name: 'Types' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /types de matériel/i })).toBeInTheDocument()
   })
 
   it('affiche le bouton Ajouter un type', () => {
@@ -53,31 +53,29 @@ describe('TypesIndex', () => {
     expect(within(screen.getByRole('dialog')).getByText('Ajouter un type')).toBeInTheDocument()
   })
 
-  it('ouvre le modal de modification au clic Modifier', async () => {
+  it('ouvre le modal de modification au clic bouton edit', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={mockTypes} />)
-    const modifierButtons = await screen.findAllByText('Modifier')
+    const modifierButtons = screen.getAllByTitle('Modifier')
     await user.click(modifierButtons[0])
     expect(screen.getByText('Modifier un type')).toBeInTheDocument()
   })
 
-  it('boutons Supprimer sont de type danger', async () => {
+  it('boutons Supprimer sont présents', async () => {
     render(<TypesIndex types={mockTypes} />)
     await waitFor(() => {
-      const dangerButtons = screen.getAllByText('Supprimer')
-      expect(dangerButtons.length).toBeGreaterThan(0)
+      const deleteButtons = screen.getAllByTitle('Supprimer')
+      expect(deleteButtons.length).toBeGreaterThan(0)
     })
   })
 
   it('appelle router.put lors de la soumission modification', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={mockTypes} />)
-    const modifierButtons = await screen.findAllByText('Modifier')
+    const modifierButtons = screen.getAllByTitle('Modifier')
     await user.click(modifierButtons[0])
-    // Modal ouvert avec nom pré-rempli
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByDisplayValue('Cartes')).toBeInTheDocument()
-    // Soumettre le formulaire
     const submitButton = within(dialog).getByRole('button', { name: 'Modifier' })
     await user.click(submitButton)
     await waitFor(() => {
@@ -88,24 +86,22 @@ describe('TypesIndex', () => {
   it('appelle router.delete après confirmation Popconfirm', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={mockTypes} />)
-    const deleteButtons = await screen.findAllByRole('button', { name: /supprimer/i })
+    const deleteButtons = screen.getAllByTitle('Supprimer')
     await user.click(deleteButtons[0])
-    // Popconfirm s'affiche
     await waitFor(() => {
-      expect(screen.getByText('Êtes-vous sûr de vouloir supprimer ce type ?')).toBeInTheDocument()
+      expect(screen.getByText('Supprimer ce type ?')).toBeInTheDocument()
     })
-    // Cliquer le bouton de confirmation dans le Popconfirm
-    const allDeleteButtons = screen.getAllByRole('button', { name: /supprimer/i })
-    await user.click(allDeleteButtons[allDeleteButtons.length - 1])
+    const confirmButton = screen.getAllByRole('button', { name: /supprimer/i })
+    await user.click(confirmButton[confirmButton.length - 1])
     await waitFor(() => {
       expect(router.delete).toHaveBeenCalledWith('/types/1')
     })
   })
 
-  it('renders title and button as siblings in the same flex container', () => {
+  it('renders title and button in the same header section', () => {
     render(<TypesIndex types={mockTypes} />)
-    const heading = screen.getByRole('heading', { name: /types/i })
+    const heading = screen.getByRole('heading', { name: /types de matériel/i })
     const button = screen.getByRole('button', { name: /ajouter un type/i })
-    expect(heading.parentElement).toBe(button.parentElement)
+    expect(heading.parentElement?.parentElement).toContain(button)
   })
 })

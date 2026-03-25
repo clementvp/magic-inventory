@@ -16,13 +16,14 @@ export default class StorageLocationsController {
   async index({ auth, inertia }: HttpContext) {
     const storageLocations = await StorageLocation.query()
       .where('user_id', auth.user!.id)
+      .withCount('materials')
       .orderBy('name', 'asc')
 
     const locationsWithCount = storageLocations.map((loc) => ({
       id: loc.id,
       name: loc.name,
       createdAt: loc.createdAt,
-      materialsCount: 0,
+      materialsCount: Number(loc.$extras.materials_count),
     }))
 
     return inertia.render('StorageLocations/Index', { storageLocations: locationsWithCount })
@@ -34,9 +35,17 @@ export default class StorageLocationsController {
       .where('user_id', auth.user!.id) // Isolation multi-tenant CRITIQUE
       .firstOrFail() // 404 automatique si non trouvé ou accès non autorisé
 
-    // ⚠️ materials = [] en Epic 2 (table materials pas encore créée)
-    // En Epic 3, remplacer par : await location.related('materials').query().preload('type').preload('categories')
-    const materials: MaterialItem[] = []
+    const rawMaterials = await location.related('materials').query()
+      .preload('type')
+      .preload('categories')
+
+    const materials: MaterialItem[] = rawMaterials.map((m) => ({
+      id: m.id,
+      name: m.name,
+      type: m.type?.name,
+      categories: m.categories.map((c) => c.name),
+      author: m.author ?? undefined,
+    }))
 
     return inertia.render('StorageLocations/Show', {
       location: {
