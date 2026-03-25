@@ -9,6 +9,7 @@ import {
   TagsOutlined,
   UnorderedListOutlined,
   InboxOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons'
 import { Head, Link, usePage } from '@inertiajs/react'
 import type { MenuProps } from 'antd'
@@ -132,24 +133,51 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
       <FlashMessages />
 
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
-        <div
-          style={{
-            height: 32,
-            margin: 16,
-            color: 'white',
-            textAlign: 'center',
-            fontWeight: 'bold',
-          }}
-        >
-          {collapsed ? 'MI' : 'magic-inventory'}
-        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div
+            style={{
+              height: 32,
+              margin: 16,
+              color: 'white',
+              textAlign: 'center',
+              fontWeight: 'bold',
+            }}
+          >
+            {collapsed ? 'MI' : 'magic-inventory'}
+          </div>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[getSelectedKey()]}
-          items={menuItems}
-        />
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[getSelectedKey()]}
+            items={menuItems}
+          />
+
+          <div style={{ marginTop: 'auto', padding: '16px 8px' }}>
+            <form method="POST" action="/logout">
+              <button
+                type="submit"
+                aria-label="Se déconnecter"
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.65)',
+                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 14,
+                }}
+              >
+                <LogoutOutlined />
+                {!collapsed && <span>Se déconnecter</span>}
+              </button>
+            </form>
+          </div>
+        </div>
       </Sider>
 
       <AntLayout>

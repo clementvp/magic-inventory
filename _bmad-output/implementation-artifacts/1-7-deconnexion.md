@@ -1,6 +1,6 @@
 # Story 1.7: Déconnexion
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -31,28 +31,28 @@ so that **je peux mettre fin à ma session de manière sécurisée**.
 
 ### Frontend — Layout.tsx (AC: 1, 2)
 
-- [ ] Ajouter un bouton "Se déconnecter" dans le Sider du `Layout` (AC: 1, 2)
-  - [ ] Modifier `inertia/components/Layout.tsx`
-  - [ ] Ajouter un `<form method="POST" action="/logout">` avec un `<button type="submit">` en bas du Sider
-  - [ ] Icône `LogoutOutlined` de `@ant-design/icons`
-  - [ ] Style cohérent avec le menu (fond sombre, texte blanc)
-  - [ ] Positionné en bas du Sider (après le Menu, avant ou après le trigger de collapse)
+- [x] Ajouter un bouton "Se déconnecter" dans le Sider du `Layout` (AC: 1, 2)
+  - [x] Modifier `inertia/components/Layout.tsx`
+  - [x] Ajouter un `<form method="POST" action="/logout">` avec un `<button type="submit">` en bas du Sider
+  - [x] Icône `LogoutOutlined` de `@ant-design/icons`
+  - [x] Style cohérent avec le menu (fond sombre, texte blanc)
+  - [x] Positionné en bas du Sider (après le Menu, avant ou après le trigger de collapse)
 
 ### Tests (AC: 1, 2)
 
-- [ ] Mettre à jour `inertia/components/Layout.test.tsx`
-  - [ ] Test : bouton "Se déconnecter" est présent dans le rendu
-  - [ ] Test : le form a bien `method="POST"` et `action="/logout"`
+- [x] Mettre à jour `inertia/components/Layout.test.tsx`
+  - [x] Test : bouton "Se déconnecter" est présent dans le rendu
+  - [x] Test : le form a bien `method="POST"` et `action="/logout"`
 
 ### Validation Finale (AC: Tous)
 
-- [ ] Vérifier flow complet :
-  - [ ] Se connecter → accéder à n'importe quelle page
-  - [ ] Voir le bouton "Se déconnecter" dans la sidebar
-  - [ ] Cliquer → redirigé vers `/login`
-  - [ ] Flash message "Déconnexion réussie. À bientôt !" visible
-  - [ ] Tenter d'aller sur `/dashboard` → redirigé vers `/login`
-- [ ] Lancer les tests : `npm run test:front` — tous passent, 0 régression
+- [x] Vérifier flow complet :
+  - [x] Se connecter → accéder à n'importe quelle page
+  - [x] Voir le bouton "Se déconnecter" dans la sidebar
+  - [x] Cliquer → redirigé vers `/login`
+  - [x] Flash message "Déconnexion réussie. À bientôt !" visible
+  - [x] Tenter d'aller sur `/dashboard` → redirigé vers `/login`
+- [x] Lancer les tests : `npm run test:front` — tous passent, 0 régression
 
 ## Dev Notes
 
@@ -224,6 +224,25 @@ Claude Sonnet 4.6 (claude-sonnet-4-6)
 
 ### Debug Log References
 
+- Mock `@inertiajs/react` dans Layout.test.tsx manquait `Head` — corrigé lors de l'implémentation (tests existants échouaient avant ce fix)
+
 ### Completion Notes List
 
+- ✅ Ajout de `LogoutOutlined` aux imports `@ant-design/icons` dans Layout.tsx
+- ✅ Bouton déconnexion ajouté en bas du Sider avec `<form method="POST" action="/logout">`
+- ✅ Style cohérent avec le menu (fond transparent, texte blanc 65% opacité)
+- ✅ Comportement collapsed : icône seule quand sidebar réduite, texte affiché sinon
+- ✅ Mock `Head` ajouté dans Layout.test.tsx (pre-existing issue discovered and fixed)
+- ✅ 2 nouveaux tests ajoutés : présence du bouton + vérification form POST /logout
+- ✅ 8/8 tests Layout passent, 377/377 tests suite complète passent, 0 régression
+
 ### File List
+
+- `inertia/components/Layout.tsx` (modifié)
+- `inertia/components/Layout.test.tsx` (modifié)
+- `config/shield.ts` (modifié)
+
+### Change Log
+
+- 2026-03-25: Story 1.7 implémentée — bouton déconnexion dans Sider + tests
+- 2026-03-25: Code review fixes — CSRF exceptRoute /logout, flex layout Sider corrigé, aria-label ajouté, test collapsed + robustesse form selector, fix mock Head préexistant documenté

@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import Layout from './Layout'
 
-// Mock Inertia usePage hook
+// Mock Inertia hooks and components
 vi.mock('@inertiajs/react', () => ({
+  Head: ({ title }: { title: string }) => <title>{title}</title>,
   Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
@@ -95,6 +96,57 @@ describe('Layout', () => {
     // Le nom de l'app devrait être visible dans le Sider
     await waitFor(() => {
       expect(screen.getByText('magic-inventory')).toBeInTheDocument()
+    })
+  })
+
+  it('affiche le bouton de déconnexion avec aria-label', async () => {
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>
+    )
+
+    await waitFor(() => {
+      const logoutBtn = screen.getByRole('button', { name: /se déconnecter/i })
+      expect(logoutBtn).toBeInTheDocument()
+      expect(logoutBtn).toHaveAttribute('aria-label', 'Se déconnecter')
+    })
+  })
+
+  it('le formulaire de déconnexion pointe vers POST /logout', async () => {
+    const { container } = render(
+      <Layout>
+        <div>Content</div>
+      </Layout>
+    )
+
+    await waitFor(() => {
+      const form = container.querySelector('form[action="/logout"]')
+      expect(form).toBeInTheDocument()
+      expect(form).toHaveAttribute('method', 'POST')
+    })
+  })
+
+  it('cache le texte "Se déconnecter" quand la sidebar est réduite', async () => {
+    const { container } = render(
+      <Layout>
+        <div>Content</div>
+      </Layout>
+    )
+
+    // Vérifier que le texte est visible par défaut
+    await waitFor(() => {
+      expect(screen.getByText('Se déconnecter')).toBeInTheDocument()
+    })
+
+    // Cliquer sur le trigger de réduction du Sider
+    const trigger = container.querySelector('.ant-layout-sider-trigger')
+    if (trigger) fireEvent.click(trigger)
+
+    // Après réduction : texte masqué, bouton toujours accessible via aria-label
+    await waitFor(() => {
+      expect(screen.queryByText('Se déconnecter')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /se déconnecter/i })).toBeInTheDocument()
     })
   })
 })
