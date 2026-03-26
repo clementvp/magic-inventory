@@ -1,7 +1,8 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Empty, Form, Input, List, Modal, Popconfirm, Select, Tag, Typography } from 'antd'
+import { Button, Empty, Form, Input, List, Modal, Select, Tag, Typography } from 'antd'
 import Layout from '~/components/Layout'
+import DeleteModal from '~/components/DeleteModal'
 
 interface RoutineOption {
   id: number
@@ -32,6 +33,8 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedRoutineIds, setSelectedRoutineIds] = useState<number[]>([])
   const [submittingRoutine, setSubmittingRoutine] = useState(false)
+  const [removingRoutine, setRemovingRoutine] = useState<{ id: number; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   const handleSubmit = (values: { name: string; notes?: string }) => {
     setSubmitting(true)
@@ -47,6 +50,17 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
 
   const linkedRoutineIds = new Set(show.routines.map((r) => r.id))
   const availableRoutines = allRoutines.filter((r) => !linkedRoutineIds.has(r.id))
+
+  const handleRemoveConfirm = () => {
+    if (!removingRoutine) return
+    setIsRemoving(true)
+    router.delete(`/shows/${show.id}/routines/${removingRoutine.id}`, {
+      onFinish: () => {
+        setIsRemoving(false)
+        setRemovingRoutine(null)
+      },
+    })
+  }
 
   const handleAttach = () => {
     if (selectedRoutineIds.length === 0) return
@@ -115,17 +129,15 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
           renderItem={(r) => (
             <List.Item
               actions={[
-                <Popconfirm
+                <Button
                   key="retirer"
-                  title="Retirer cette routine du spectacle ?"
-                  onConfirm={() => router.delete(`/shows/${show.id}/routines/${r.id}`)}
-                  okText="Retirer"
-                  cancelText="Annuler"
+                  danger
+                  size="small"
+                  loading={isRemoving && removingRoutine?.id === r.id}
+                  onClick={() => setRemovingRoutine({ id: r.id, name: r.name })}
                 >
-                  <Button danger size="small">
-                    Retirer
-                  </Button>
-                </Popconfirm>,
+                  Retirer
+                </Button>,
               ]}
             >
               <List.Item.Meta
@@ -142,6 +154,16 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
           )}
         />
       )}
+
+      <DeleteModal
+        open={removingRoutine !== null}
+        itemName={removingRoutine?.name ?? ''}
+        entityLabel="cette routine du spectacle"
+        confirmText="Retirer"
+        loading={isRemoving}
+        onConfirm={handleRemoveConfirm}
+        onCancel={() => setRemovingRoutine(null)}
+      />
 
       <Modal
         title="Ajouter des routines"

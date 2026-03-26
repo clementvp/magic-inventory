@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react'
 import { useState, useMemo, useEffect } from 'react'
-import { Button, Card, Col, Empty, Input, Pagination, Popconfirm, Row, Space } from 'antd'
+import { Button, Card, Col, Empty, Input, Pagination, Row, Space } from 'antd'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 interface ShowItem {
   id: number
@@ -22,12 +23,21 @@ export default function ShowsIndex({ shows }: Props) {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = (id: number) => {
-    setDeletingId(id)
-    router.delete(`/shows/${id}`, {
-      onFinish: () => setDeletingId(null),
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/shows/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
     })
   }
 
@@ -192,22 +202,14 @@ export default function ShowsIndex({ shows }: Props) {
                         onClick={() => router.visit(`/shows/${s.id}/edit`)}
                         title="Modifier"
                       />
-                      <Popconfirm
-                        title="Supprimer ce spectacle ?"
-                        onConfirm={() => handleDelete(s.id)}
-                        okText="Supprimer"
-                        cancelText="Annuler"
-                        okButtonProps={{ danger: true }}
-                      >
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                          title="Supprimer"
-                          loading={deletingId === s.id}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </Popconfirm>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                        title="Supprimer"
+                        loading={isDeleting && deletingItem?.id === s.id}
+                        onClick={() => handleDeleteRequest({ id: s.id, name: s.name })}
+                      />
                     </span>
                   }
                 >
@@ -236,6 +238,14 @@ export default function ShowsIndex({ shows }: Props) {
           />
         </>
       )}
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="ce spectacle"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }

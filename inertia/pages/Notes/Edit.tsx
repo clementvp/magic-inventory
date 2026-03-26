@@ -1,8 +1,9 @@
 import { router } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
-import { Button, Form, Input, Popconfirm, Space, Spin, message } from 'antd'
+import { Button, Form, Input, Space, Spin, message } from 'antd'
 import Icon from '~/components/Icon'
 import Layout from '~/components/Layout'
+import DeleteModal from '~/components/DeleteModal'
 
 const { TextArea } = Input
 
@@ -22,6 +23,7 @@ export default function NotesEdit({ note }: Props) {
   const [title, setTitle] = useState(note.title ?? '')
   const [content, setContent] = useState(note.content ?? '')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const isFirstRender = useRef(true)
 
@@ -47,6 +49,7 @@ export default function NotesEdit({ note }: Props) {
   }, [title, content, note.id])
 
   const handleDelete = () => {
+    setDeleteModalOpen(false)
     setDeleting(true)
     router.delete(`/notes/${note.id}`, {
       onError: () => {
@@ -106,17 +109,18 @@ export default function NotesEdit({ note }: Props) {
         <Form.Item>
           <Space>
             <Button onClick={() => router.visit('/notes')}>Retour aux notes</Button>
-            <Popconfirm
-              title="Êtes-vous sûr de vouloir supprimer cette note ?"
-              onConfirm={handleDelete}
-              okText="Supprimer"
-              cancelText="Annuler"
-            >
-              <Button danger loading={deleting}>Supprimer</Button>
-            </Popconfirm>
+            <Button danger loading={deleting} onClick={() => setDeleteModalOpen(true)}>Supprimer</Button>
           </Space>
         </Form.Item>
       </Form>
+      <DeleteModal
+        open={deleteModalOpen}
+        itemName={title || 'Note sans titre'}
+        entityLabel="cette note"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
     </Layout>
   )
 }

@@ -1,11 +1,44 @@
 import { router, Link } from '@inertiajs/react'
-import { useState } from 'react'
-import { Button, Descriptions, message, Popconfirm, Space, Tag, Typography } from 'antd'
+import { useState, useEffect } from 'react'
+import { Badge, Button, Drawer, Input, message, Select, Space, Table, Typography } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import 'dayjs/locale/fr'
 import Layout from '~/components/Layout'
+import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 dayjs.locale('fr')
+
+const tagStyle = {
+  fontSize: 10,
+  fontFamily: '"Manrope", sans-serif',
+  fontWeight: 700 as const,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.1em',
+  padding: '2px 8px',
+  borderRadius: 4,
+  backgroundColor: '#ffe088',
+  color: '#574500',
+}
+
+const typeTagStyle = {
+  fontSize: 10,
+  fontFamily: '"Manrope", sans-serif',
+  fontWeight: 700 as const,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.1em',
+  padding: '2px 8px',
+  borderRadius: 4,
+  backgroundColor: '#ffdeac',
+  color: '#604100',
+}
+
+interface RoutineItem {
+  id: number
+  name: string
+  categories: { id: number; name: string }[]
+}
 
 interface MaterialDetail {
   id: number
@@ -15,7 +48,7 @@ interface MaterialDetail {
   storageLocation: { id: number; name: string } | null
   author: string | null
   createdAt: string
-  routines: { id: number; name: string }[]
+  routines: RoutineItem[]
 }
 
 interface Props {
@@ -23,9 +56,20 @@ interface Props {
 }
 
 export default function MaterialsShow({ material }: Props) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterCategoryIds, setFilterCategoryIds] = useState<number[]>([])
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   const handleDelete = () => {
+    setDeleteModalOpen(false)
     setDeleting(true)
     router.delete(`/materials/${material.id}`, {
       onError: () => {
@@ -35,62 +79,178 @@ export default function MaterialsShow({ material }: Props) {
     })
   }
 
+  const availableCategories = [...new Map(
+    material.routines.flatMap((r) => r.categories).map((c) => [c.id, c])
+  ).values()].sort((a, b) => a.name.localeCompare(b.name))
+
+  const filteredRoutines = material.routines.filter((r) => {
+    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategories = filterCategoryIds.length === 0 || r.categories.some((c) => filterCategoryIds.includes(c.id))
+    return matchesSearch && matchesCategories
+  })
+
+  const routineColumns: ColumnsType<RoutineItem> = [
+    {
+      title: 'Nom',
+      dataIndex: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (name, record) => (
+        <Link href={`/routines/${record.id}`}>{name}</Link>
+      ),
+    },
+    {
+      title: 'Catégories',
+      dataIndex: 'categories',
+      render: (categories: { id: number; name: string }[]) =>
+        categories.length > 0 ? (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {categories.map((c) => (
+              <span key={c.id} style={tagStyle}>{c.name}</span>
+            ))}
+          </div>
+        ) : '—',
+    },
+  ]
+
   return (
     <Layout title={material.name}>
-      <h1 style={{ fontFamily: '"Newsreader", serif', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 24px' }}>{material.name}</h1>
-
-      <Space style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={() => router.visit(`/materials/${material.id}/edit`)}>
-          Modifier
-        </Button>
-        <Popconfirm
-          title="Êtes-vous sûr de vouloir supprimer ce matériel ?"
-          onConfirm={handleDelete}
-          okText="Supprimer"
-          cancelText="Annuler"
-        >
-          <Button danger loading={deleting}>Supprimer</Button>
-        </Popconfirm>
-        <Button onClick={() => router.visit('/materials')}>Retour à l'inventaire</Button>
-      </Space>
-
-      <Descriptions bordered column={1} style={{ marginBottom: 24 }}>
-        <Descriptions.Item label="Nom">{material.name}</Descriptions.Item>
-        <Descriptions.Item label="Type">
-          {material.type ? <Tag color="blue">{material.type.name}</Tag> : '—'}
-        </Descriptions.Item>
-        <Descriptions.Item label="Catégorie(s)">
-          {material.categories.length > 0
-            ? material.categories.map((c) => <Tag key={c.id}>{c.name}</Tag>)
-            : '—'}
-        </Descriptions.Item>
-        <Descriptions.Item label="Lieu de stockage">
-          {material.storageLocation ? (
-            <Link href={`/storage-locations/${material.storageLocation.id}`}>
-              {material.storageLocation.name}
-            </Link>
-          ) : (
-            '—'
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        paddingBottom: 32,
+        marginBottom: 40,
+        borderBottom: '1px solid #e5e2e1',
+      }}>
+        <div>
+          <h1 style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 8px' }}>
+            {material.name}
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 4 }}>
+            <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
+              Ajouté le {dayjs(material.createdAt).format('DD MMMM YYYY')}
+            </span>
+            {material.type && (
+              <>
+                <span style={{ color: '#a8a29e' }}>·</span>
+                <span style={typeTagStyle}>{material.type.name}</span>
+              </>
+            )}
+          </div>
+          {material.categories.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+              {material.categories.map((c) => (
+                <span key={c.id} style={tagStyle}>{c.name}</span>
+              ))}
+            </div>
           )}
-        </Descriptions.Item>
-        <Descriptions.Item label="Auteur">{material.author ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Date d'ajout">
-          {dayjs(material.createdAt).format('DD MMMM YYYY')}
-        </Descriptions.Item>
-      </Descriptions>
+          {(material.storageLocation || material.author) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 10 }}>
+              {material.storageLocation && (
+                <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
+                  Stocké dans <Link href={`/storage-locations/${material.storageLocation.id}`}>{material.storageLocation.name}</Link>
+                </span>
+              )}
+              {material.storageLocation && material.author && (
+                <span style={{ color: '#a8a29e' }}>·</span>
+              )}
+              {material.author && (
+                <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
+                  {material.author}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 24 }}>
+          <Button onClick={() => router.visit(`/materials/${material.id}/edit`)} icon={<Icon name="edit" style={{ fontSize: 16 }} />}>
+            Modifier
+          </Button>
+          <Button
+            danger
+            loading={deleting}
+            icon={<Icon name="delete" style={{ fontSize: 16 }} />}
+            onClick={() => setDeleteModalOpen(true)}
+          >
+            Supprimer
+          </Button>
+        </div>
+      </div>
 
-      <Typography.Title level={2}>Utilisé dans les routines suivantes :</Typography.Title>
+      <h2 style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 28, fontWeight: 400, color: '#583b00', marginTop: 40, marginBottom: 16 }}>
+        Routines utilisant ce matériel
+      </h2>
+
       {material.routines.length > 0 ? (
-        <Space direction="vertical" size={4}>
-          {material.routines.map((r) => (
-            <Link key={r.id} href={`/routines/${r.id}`}>{r.name}</Link>
-          ))}
-        </Space>
+        <>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+            <Input
+              placeholder="Rechercher une routine…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              prefix={<Icon name="search" style={{ fontSize: 16, color: '#a8a29e' }} />}
+              allowClear
+              style={{ maxWidth: 320 }}
+            />
+            {availableCategories.length > 0 && (
+              <Badge count={filterCategoryIds.length} size="small">
+                <Button onClick={() => setIsFilterDrawerOpen(true)}>Filtres</Button>
+              </Badge>
+            )}
+          </div>
+          <Table<RoutineItem>
+            dataSource={filteredRoutines}
+            columns={routineColumns}
+            rowKey="id"
+            pagination={{ pageSize: 5, hideOnSinglePage: true }}
+            locale={{ emptyText: 'Aucune routine ne correspond à votre recherche' }}
+            onRow={(record) => ({ onClick: () => router.visit(`/routines/${record.id}`), style: { cursor: 'pointer' } })}
+          />
+        </>
       ) : (
         <Typography.Text type="secondary">
           Ce matériel n'est utilisé dans aucune routine
         </Typography.Text>
       )}
+      <DeleteModal
+        open={deleteModalOpen}
+        itemName={material.name}
+        entityLabel="ce matériel"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
+
+      <Drawer
+        title="Filtres"
+        placement="right"
+        open={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        footer={
+          <Button
+            onClick={() => setFilterCategoryIds([])}
+            disabled={filterCategoryIds.length === 0}
+          >
+            Réinitialiser les filtres
+          </Button>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <div>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>Catégorie(s)</div>
+            <Select
+              mode="multiple"
+              placeholder="Toutes les catégories"
+              style={{ width: '100%' }}
+              options={availableCategories.map((c) => ({ value: c.id, label: c.name }))}
+              value={filterCategoryIds}
+              onChange={setFilterCategoryIds}
+              allowClear
+              virtual={false}
+            />
+          </div>
+        </Space>
+      </Drawer>
     </Layout>
   )
 }

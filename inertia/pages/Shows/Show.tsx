@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { router } from '@inertiajs/react'
-import { Button, List, message, Popconfirm, Space, Tag, Typography } from 'antd'
+import { Button, List, message, Space, Tag, Typography } from 'antd'
 import Layout from '~/components/Layout'
+import DeleteModal from '~/components/DeleteModal'
 
 interface RoutineItem {
   id: number
@@ -22,9 +23,11 @@ interface Props {
 }
 
 export default function ShowsShow({ show }: Props) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   const handleDelete = () => {
+    setDeleteModalOpen(false)
     setDeleting(true)
     router.delete(`/shows/${show.id}`, {
       onError: () => {
@@ -44,14 +47,7 @@ export default function ShowsShow({ show }: Props) {
           Générer checklist
         </Button>
         <Button type="primary" onClick={() => router.visit(`/shows/${show.id}/edit`)}>Modifier</Button>
-        <Popconfirm
-          title="Êtes-vous sûr de vouloir supprimer ce spectacle ?"
-          onConfirm={handleDelete}
-          okText="Oui, supprimer"
-          cancelText="Annuler"
-        >
-          <Button danger loading={deleting}>Supprimer</Button>
-        </Popconfirm>
+          <Button danger loading={deleting} onClick={() => setDeleteModalOpen(true)}>Supprimer</Button>
       </Space>
 
       {show.notes && (
@@ -100,6 +96,14 @@ export default function ShowsShow({ show }: Props) {
           )}
         />
       )}
+      <DeleteModal
+        open={deleteModalOpen}
+        itemName={show.name}
+        entityLabel="ce spectacle"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
     </Layout>
   )
 }

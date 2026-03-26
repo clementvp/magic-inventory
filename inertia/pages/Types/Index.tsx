@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Form, Input, Modal, Popconfirm, Table } from 'antd'
+import { Button, Drawer, Form, Input, Table } from 'antd'
 import Layout from '~/components/Layout'
 import PageHeader from '~/components/PageHeader'
 import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 interface TypeItem {
   id: number
@@ -18,16 +19,18 @@ interface Props {
 export default function TypesIndex({ types }: Props) {
   const [createForm] = Form.useForm()
   const [editForm] = Form.useForm()
-  const [createModalOpen, setCreateModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [editingType, setEditingType] = useState<TypeItem | null>(null)
   const [createLoading, setCreateLoading] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleCreate = (values: { name: string }) => {
     setCreateLoading(true)
     router.post('/types', { name: values.name }, {
-      onSuccess: () => { setCreateModalOpen(false); createForm.resetFields() },
+      onSuccess: () => { setCreateDrawerOpen(false); createForm.resetFields() },
       onFinish: () => setCreateLoading(false),
     })
   }
@@ -35,20 +38,31 @@ export default function TypesIndex({ types }: Props) {
   const handleEdit = (type: TypeItem) => {
     setEditingType(type)
     editForm.setFieldsValue({ name: type.name })
-    setEditModalOpen(true)
+    setEditDrawerOpen(true)
   }
 
   const handleUpdate = (values: { name: string }) => {
     if (!editingType) return
     setEditLoading(true)
     router.put(`/types/${editingType.id}`, { name: values.name }, {
-      onSuccess: () => { setEditModalOpen(false); editForm.resetFields() },
+      onSuccess: () => { setEditDrawerOpen(false); editForm.resetFields() },
       onFinish: () => setEditLoading(false),
     })
   }
 
-  const handleDelete = (id: number) => {
-    router.delete(`/types/${id}`)
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/types/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
+    })
   }
 
   const columns = [
@@ -80,19 +94,13 @@ export default function TypesIndex({ types }: Props) {
             onClick={() => handleEdit(record)}
             title="Modifier"
           />
-          <Popconfirm
-            title="Supprimer ce type ?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Supprimer"
-            cancelText="Annuler"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              type="text"
-              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
-              title="Supprimer"
-            />
-          </Popconfirm>
+          <Button
+            type="text"
+            icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+            title="Supprimer"
+            loading={isDeleting && deletingItem?.id === record.id}
+            onClick={() => handleDeleteRequest({ id: record.id, name: record.name })}
+          />
         </span>
       ),
     },
@@ -105,7 +113,7 @@ export default function TypesIndex({ types }: Props) {
         description="Gérez les catégories de votre arsenal ésotérique. Classez vos accessoires par nature et usage pour une maîtrise parfaite de votre inventaire."
         actionLabel="Ajouter un type"
         actionIcon="add_circle"
-        onAction={() => setCreateModalOpen(true)}
+        onAction={() => setCreateDrawerOpen(true)}
       />
 
       <Table
@@ -133,7 +141,7 @@ export default function TypesIndex({ types }: Props) {
               <p style={{ color: '#54433a', marginBottom: 24, maxWidth: 360, margin: '0 auto 24px' }}>
                 Votre registre est vierge. Commencez par définir les types de matériel que vous utilisez.
               </p>
-              <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+              <Button type="primary" onClick={() => setCreateDrawerOpen(true)}>
                 Ajouter votre premier type
               </Button>
             </div>
@@ -141,13 +149,14 @@ export default function TypesIndex({ types }: Props) {
         }}
       />
 
-      <Modal
+      <Drawer
         title="Ajouter un type"
-        open={createModalOpen}
-        onCancel={() => { setCreateModalOpen(false); createForm.resetFields() }}
-        footer={null}
+        open={createDrawerOpen}
+        onClose={() => { setCreateDrawerOpen(false); createForm.resetFields() }}
+        placement="right"
+        width={420}
       >
-        <Form form={createForm} onFinish={handleCreate} layout="vertical" style={{ marginTop: 16 }}>
+        <Form form={createForm} onFinish={handleCreate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du type est requis' }]}>
             <Input placeholder="Ex : Cartes, Cordes, Accessoires..." />
           </Form.Item>
@@ -155,15 +164,16 @@ export default function TypesIndex({ types }: Props) {
             <Button type="primary" htmlType="submit" loading={createLoading}>Créer</Button>
           </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         title="Modifier un type"
-        open={editModalOpen}
-        onCancel={() => { setEditModalOpen(false); editForm.resetFields() }}
-        footer={null}
+        open={editDrawerOpen}
+        onClose={() => { setEditDrawerOpen(false); editForm.resetFields() }}
+        placement="right"
+        width={420}
       >
-        <Form form={editForm} onFinish={handleUpdate} layout="vertical" style={{ marginTop: 16 }}>
+        <Form form={editForm} onFinish={handleUpdate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du type est requis' }]}>
             <Input placeholder="Ex : Cartes, Cordes, Accessoires..." />
           </Form.Item>
@@ -171,7 +181,16 @@ export default function TypesIndex({ types }: Props) {
             <Button type="primary" htmlType="submit" loading={editLoading}>Modifier</Button>
           </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
+
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="ce type"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }

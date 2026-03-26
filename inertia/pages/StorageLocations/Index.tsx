@@ -1,8 +1,9 @@
 import { router, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Segmented, Space, Table } from 'antd'
+import { Button, Card, Col, Drawer, Form, Input, Row, Segmented, Space, Table } from 'antd'
 import Layout from '~/components/Layout'
 import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 interface StorageLocationItem {
   id: number
@@ -18,18 +19,19 @@ interface Props {
 export default function StorageLocationsIndex({ storageLocations }: Props) {
   const [createForm] = Form.useForm()
   const [editForm] = Form.useForm()
-  const [createModalOpen, setCreateModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [editingLocation, setEditingLocation] = useState<StorageLocationItem | null>(null)
   const [createLoading, setCreateLoading] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
 
   const handleCreate = (values: { name: string }) => {
     setCreateLoading(true)
     router.post('/storage-locations', { name: values.name }, {
-      onSuccess: () => { setCreateModalOpen(false); createForm.resetFields() },
+      onSuccess: () => { setCreateDrawerOpen(false); createForm.resetFields() },
       onFinish: () => setCreateLoading(false),
     })
   }
@@ -37,22 +39,30 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
   const handleEdit = (location: StorageLocationItem) => {
     setEditingLocation(location)
     editForm.setFieldsValue({ name: location.name })
-    setEditModalOpen(true)
+    setEditDrawerOpen(true)
   }
 
   const handleUpdate = (values: { name: string }) => {
     if (!editingLocation) return
     setEditLoading(true)
     router.put(`/storage-locations/${editingLocation.id}`, { name: values.name }, {
-      onSuccess: () => { setEditModalOpen(false); editForm.resetFields() },
+      onSuccess: () => { setEditDrawerOpen(false); editForm.resetFields() },
       onFinish: () => setEditLoading(false),
     })
   }
 
-  const handleDelete = (id: number) => {
-    setDeletingId(id)
-    router.delete(`/storage-locations/${id}`, {
-      onFinish: () => setDeletingId(null),
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/storage-locations/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
     })
   }
 
@@ -95,20 +105,13 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
             onClick={() => handleEdit(record)}
             title="Modifier"
           />
-          <Popconfirm
-            title="Supprimer ce lieu de stockage ?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Supprimer"
-            cancelText="Annuler"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              type="text"
-              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
-              title="Supprimer"
-              loading={deletingId === record.id}
-            />
-          </Popconfirm>
+          <Button
+            type="text"
+            icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+            title="Supprimer"
+            loading={isDeleting && deletingItem?.id === record.id}
+            onClick={() => handleDeleteRequest({ id: record.id, name: record.name })}
+          />
         </span>
       ),
     },
@@ -129,7 +132,7 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
       <p style={{ color: '#54433a', maxWidth: 360, margin: '0 auto 24px' }}>
         {"Créez votre premier coffre, étagère ou pièce secrète pour commencer l'archivage."}
       </p>
-      <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+      <Button type="primary" onClick={() => setCreateDrawerOpen(true)}>
         Ajouter votre premier lieu
       </Button>
     </div>
@@ -158,7 +161,7 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
           {"Créez votre premier coffre, étagère ou pièce secrète pour commencer l'archivage."}
         </p>
         <button
-            onClick={() => setCreateModalOpen(true)}
+            onClick={() => setCreateDrawerOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '14px 28px',
@@ -206,7 +209,7 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
           <Button
             type="primary"
             icon={<Icon name="add_circle" style={{ fontSize: 16 }} />}
-            onClick={() => setCreateModalOpen(true)}
+            onClick={() => setCreateDrawerOpen(true)}
           >
             Ajouter un lieu
           </Button>
@@ -239,20 +242,13 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
                         onClick={() => handleEdit(loc)}
                         title="Modifier"
                       />
-                      <Popconfirm
-                        title="Supprimer ce lieu de stockage ?"
-                        onConfirm={() => handleDelete(loc.id)}
-                        okText="Supprimer"
-                        cancelText="Annuler"
-                        okButtonProps={{ danger: true }}
-                      >
-                        <Button
-                          type="text"
-                          icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                          title="Supprimer"
-                          loading={deletingId === loc.id}
-                        />
-                      </Popconfirm>
+                      <Button
+                        type="text"
+                        icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                        title="Supprimer"
+                        loading={isDeleting && deletingItem?.id === loc.id}
+                        onClick={() => handleDeleteRequest({ id: loc.id, name: loc.name })}
+                      />
                     </span>
                   }
                 >
@@ -274,13 +270,14 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
         )
       )}
 
-      <Modal
+      <Drawer
         title="Ajouter un lieu"
-        open={createModalOpen}
-        onCancel={() => { setCreateModalOpen(false); createForm.resetFields() }}
-        footer={null}
+        open={createDrawerOpen}
+        onClose={() => { setCreateDrawerOpen(false); createForm.resetFields() }}
+        placement="right"
+        width={420}
       >
-        <Form form={createForm} onFinish={handleCreate} layout="vertical" style={{ marginTop: 16 }}>
+        <Form form={createForm} onFinish={handleCreate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du lieu est requis' }]}>
             <Input placeholder="ex : Tiroir cartes, Bibliothèque, Valise close-up..." />
           </Form.Item>
@@ -288,15 +285,16 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
             <Button type="primary" htmlType="submit" loading={createLoading}>Créer</Button>
           </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         title="Modifier un lieu"
-        open={editModalOpen}
-        onCancel={() => { setEditModalOpen(false); editForm.resetFields() }}
-        footer={null}
+        open={editDrawerOpen}
+        onClose={() => { setEditDrawerOpen(false); editForm.resetFields() }}
+        placement="right"
+        width={420}
       >
-        <Form form={editForm} onFinish={handleUpdate} layout="vertical" style={{ marginTop: 16 }}>
+        <Form form={editForm} onFinish={handleUpdate} layout="vertical">
           <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Le nom du lieu est requis' }]}>
             <Input placeholder="ex : Tiroir cartes, Bibliothèque, Valise close-up..." />
           </Form.Item>
@@ -304,7 +302,16 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
             <Button type="primary" htmlType="submit" loading={editLoading}>Modifier</Button>
           </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
+
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="ce lieu de stockage"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }

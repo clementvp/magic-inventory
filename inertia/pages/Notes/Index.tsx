@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Card, Col, Pagination, Popconfirm, Row, Space, Typography, message } from 'antd'
+import { Button, Card, Col, Pagination, Row, Space, Typography, message } from 'antd'
 import Icon from '~/components/Icon'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
+import DeleteModal from '~/components/DeleteModal'
 
 interface Note {
   id: number
@@ -20,13 +21,24 @@ const PAGE_SIZE = 20
 
 export default function NotesIndex({ notes }: Props) {
   const [page, setPage] = useState(1)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = (id: number) => {
-    setDeletingId(id)
-    router.delete(`/notes/${id}`, {
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/notes/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
       onError: () => {
-        setDeletingId(null)
+        setIsDeleting(false)
+        setDeletingItem(null)
         message.error('Une erreur est survenue lors de la suppression')
       },
     })
@@ -138,26 +150,14 @@ export default function NotesIndex({ notes }: Props) {
                         onClick={() => router.visit(`/notes/${note.id}/edit`)}
                         title="Modifier"
                       />
-                      <Popconfirm
-                        title="Supprimer cette note ?"
-                        onConfirm={(e) => {
-                          e?.stopPropagation()
-                          handleDelete(note.id)
-                        }}
-                        onCancel={(e) => e?.stopPropagation()}
-                        okText="Supprimer"
-                        cancelText="Annuler"
-                        okButtonProps={{ danger: true }}
-                      >
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                          title="Supprimer"
-                          loading={deletingId === note.id}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </Popconfirm>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                        title="Supprimer"
+                        loading={isDeleting && deletingItem?.id === note.id}
+                        onClick={() => handleDeleteRequest({ id: note.id, name: note.title || 'Note sans titre' })}
+                      />
                     </span>
                   }
                 >
@@ -190,6 +190,14 @@ export default function NotesIndex({ notes }: Props) {
           />
         </>
       )}
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="cette note"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }

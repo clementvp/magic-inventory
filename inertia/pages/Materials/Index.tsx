@@ -9,7 +9,6 @@ import {
   Empty,
   Input,
   Pagination,
-  Popconfirm,
   Row,
   Segmented,
   Select,
@@ -21,6 +20,7 @@ import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 interface MaterialItem {
   id: number
@@ -39,12 +39,21 @@ interface Props {
 export default function MaterialsIndex({ materials }: Props) {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [tablePageSize, setTablePageSize] = useState(50)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = (id: number) => {
-    setDeletingId(id)
-    router.delete(`/materials/${id}`, {
-      onFinish: () => setDeletingId(null),
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/materials/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
     })
   }
   const [cardsPage, setCardsPage] = useState(1)
@@ -225,20 +234,13 @@ export default function MaterialsIndex({ materials }: Props) {
             onClick={() => router.visit(`/materials/${record.id}/edit`)}
             title="Modifier"
           />
-          <Popconfirm
-            title="Supprimer ce matériel ?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Supprimer"
-            cancelText="Annuler"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              type="text"
-              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
-              title="Supprimer"
-              loading={deletingId === record.id}
-            />
-          </Popconfirm>
+          <Button
+            type="text"
+            icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+            title="Supprimer"
+            loading={isDeleting && deletingItem?.id === record.id}
+            onClick={() => handleDeleteRequest({ id: record.id, name: record.name })}
+          />
         </span>
       ),
     },
@@ -342,22 +344,14 @@ export default function MaterialsIndex({ materials }: Props) {
                     onClick={() => router.visit(`/materials/${m.id}/edit`)}
                     title="Modifier"
                   />
-                  <Popconfirm
-                    title="Supprimer ce matériel ?"
-                    onConfirm={() => handleDelete(m.id)}
-                    okText="Supprimer"
-                    cancelText="Annuler"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                      title="Supprimer"
-                      loading={deletingId === m.id}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </Popconfirm>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                    title="Supprimer"
+                    loading={isDeleting && deletingItem?.id === m.id}
+                    onClick={() => handleDeleteRequest({ id: m.id, name: m.name })}
+                  />
                 </span>
               }
             >
@@ -547,6 +541,15 @@ export default function MaterialsIndex({ materials }: Props) {
           </div>
         </Space>
       </Drawer>
+
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="ce matériel"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }

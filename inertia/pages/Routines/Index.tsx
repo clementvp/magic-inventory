@@ -1,10 +1,11 @@
 import { router } from '@inertiajs/react'
 import { useState, useMemo, useEffect } from 'react'
-import { Badge, Button, Card, Col, Drawer, Empty, Input, Pagination, Popconfirm, Row, Segmented, Select, Space, Table, Tag } from 'antd'
+import { Badge, Button, Card, Col, Drawer, Empty, Input, Pagination, Row, Segmented, Select, Space, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import Layout from '~/components/Layout'
 import Icon from '~/components/Icon'
+import DeleteModal from '~/components/DeleteModal'
 
 interface RoutineItem {
   id: number
@@ -23,12 +24,21 @@ export default function RoutinesIndex({ routines }: Props) {
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [tablePageSize, setTablePageSize] = useState(50)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = (id: number) => {
-    setDeletingId(id)
-    router.delete(`/routines/${id}`, {
-      onFinish: () => setDeletingId(null),
+  const handleDeleteRequest = (item: { id: number; name: string }) => {
+    setDeletingItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
+    setIsDeleting(true)
+    router.delete(`/routines/${deletingItem.id}`, {
+      onFinish: () => {
+        setIsDeleting(false)
+        setDeletingItem(null)
+      },
     })
   }
   const [searchInput, setSearchInput] = useState('')
@@ -116,20 +126,13 @@ export default function RoutinesIndex({ routines }: Props) {
             onClick={() => router.visit(`/routines/${record.id}/edit`)}
             title="Modifier"
           />
-          <Popconfirm
-            title="Supprimer cette routine ?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Supprimer"
-            cancelText="Annuler"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              type="text"
-              icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
-              title="Supprimer"
-              loading={deletingId === record.id}
-            />
-          </Popconfirm>
+          <Button
+            type="text"
+            icon={<Icon name="delete" style={{ fontSize: 18, color: '#99443e' }} />}
+            title="Supprimer"
+            loading={isDeleting && deletingItem?.id === record.id}
+            onClick={() => handleDeleteRequest({ id: record.id, name: record.name })}
+          />
         </span>
       ),
     },
@@ -235,22 +238,14 @@ export default function RoutinesIndex({ routines }: Props) {
                     onClick={() => router.visit(`/routines/${r.id}/edit`)}
                     title="Modifier"
                   />
-                  <Popconfirm
-                    title="Supprimer cette routine ?"
-                    onConfirm={() => handleDelete(r.id)}
-                    okText="Supprimer"
-                    cancelText="Annuler"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                      title="Supprimer"
-                      loading={deletingId === r.id}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </Popconfirm>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
+                    title="Supprimer"
+                    loading={isDeleting && deletingItem?.id === r.id}
+                    onClick={() => handleDeleteRequest({ id: r.id, name: r.name })}
+                  />
                 </span>
               }
             >
@@ -394,6 +389,15 @@ export default function RoutinesIndex({ routines }: Props) {
         filteredRoutines.length === 0 ? noResultsState :
         cardsGrid
       )}
+
+      <DeleteModal
+        open={deletingItem !== null}
+        itemName={deletingItem?.name ?? ''}
+        entityLabel="cette routine"
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingItem(null)}
+      />
     </Layout>
   )
 }
