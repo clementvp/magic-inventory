@@ -34,83 +34,155 @@ interface Props {
   storageLocations: LocationItem[]
 }
 
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: '#8c8c8c',
+  marginBottom: 16,
+  marginTop: 4,
+}
+
 export default function MaterialsEdit({ material, types, categories, storageLocations }: Props) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(material.categoryIds)
+
+  const toggleCategory = (id: number) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
 
   const handleSubmit = (values: {
     name: string
     typeId?: number | null
-    categoryIds?: number[]
     storageLocationId?: number | null
     author?: string | null
   }) => {
     setSubmitting(true)
-    router.put(`/materials/${material.id}`, values, {
+    router.put(`/materials/${material.id}`, { ...values, categoryIds: selectedCategoryIds }, {
       onFinish: () => setSubmitting(false),
     })
   }
 
   return (
     <Layout title="Modifier">
-      <h1>Modifier le matériel</h1>
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        style={{ maxWidth: 600 }}
-        initialValues={{
-          name: material.name,
-          typeId: material.typeId,
-          categoryIds: material.categoryIds,
-          storageLocationId: material.storageLocationId,
-          author: material.author,
-        }}
-      >
-        <Form.Item
-          name="name"
-          label="Nom"
-          rules={[{ required: true, message: 'Le nom est requis' }]}
+<div style={{ marginBottom: 32, maxWidth: 680, margin: '0 auto 32px' }}>
+        <h1 style={{
+          fontFamily: '"Newsreader", serif',
+          fontSize: 48,
+          fontWeight: 400,
+          color: '#583b00',
+          lineHeight: 1.1,
+          margin: '8px 0 8px',
+        }}>
+          Modifier le matériel
+        </h1>
+        <p style={{ color: '#54433a', fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 520 }}>
+          Mettez à jour les informations de cet accessoire.
+        </p>
+      </div>
+
+      <div style={{
+        background: '#ffffff',
+        borderRadius: 12,
+        padding: '32px 40px',
+        maxWidth: 680,
+        margin: '0 auto',
+      }}>
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          initialValues={{
+            name: material.name,
+            typeId: material.typeId,
+            storageLocationId: material.storageLocationId,
+            author: material.author,
+          }}
         >
-          <Input placeholder="Ex: Bicycle Standard, Thumb Tip, Foulard..." />
-        </Form.Item>
 
-        <Form.Item name="typeId" label="Type">
-          <Select
-            allowClear
-            placeholder="Sélectionner un type..."
-            options={types.map((t) => ({ label: t.name, value: t.id }))}
-          />
-        </Form.Item>
+          <p style={sectionLabel}>Identité</p>
 
-        <Form.Item name="categoryIds" label="Catégorie(s)">
-          <Select
-            mode="multiple"
-            allowClear
-            placeholder="Sélectionner des catégories..."
-            options={categories.map((c) => ({ label: c.name, value: c.id }))}
-          />
-        </Form.Item>
+          <Form.Item
+            name="name"
+            label="Nom"
+            rules={[{ required: true, message: 'Le nom est requis' }]}
+          >
+            <Input placeholder="Ex: Bicycle Standard, Thumb Tip, Foulard..." />
+          </Form.Item>
 
-        <Form.Item name="storageLocationId" label="Lieu de stockage">
-          <Select
-            allowClear
-            placeholder="Sélectionner un lieu..."
-            options={storageLocations.map((l) => ({ label: l.name, value: l.id }))}
-          />
-        </Form.Item>
+          <Form.Item name="author" label="Auteur">
+            <Input placeholder="Ex: Paul Curry, Dai Vernon, Juan Tamariz..." />
+          </Form.Item>
 
-        <Form.Item name="author" label="Auteur">
-          <Input placeholder="Ex: Paul Curry, Dai Vernon, Juan Tamariz..." />
-        </Form.Item>
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
-            Enregistrer les modifications
-          </Button>
-          <Button onClick={() => router.visit(`/materials/${material.id}`)}>Annuler</Button>
-        </Form.Item>
-      </Form>
+          <p style={sectionLabel}>Classification</p>
+
+          <Form.Item name="typeId" label="Type">
+            <Select
+              allowClear
+              placeholder="Sélectionner un type..."
+              options={types.map((t) => ({ label: t.name, value: t.id }))}
+            />
+          </Form.Item>
+
+          <Form.Item label="Catégories">
+            {categories.length === 0 ? (
+              <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {categories.map((cat) => {
+                  const selected = selectedCategoryIds.includes(cat.id)
+                  return (
+                    <span
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
+                      style={{
+                        cursor: 'pointer',
+                        background: selected ? '#583b00' : '#fff8e8',
+                        color: selected ? '#ffffff' : '#583b00',
+                        border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
+                        borderRadius: 6,
+                        padding: '4px 12px',
+                        fontSize: 13,
+                        fontWeight: 500,
+                        fontFamily: '"Manrope", sans-serif',
+                        userSelect: 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {cat.name}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </Form.Item>
+
+          <Form.Item name="storageLocationId" label="Lieu de stockage">
+            <Select
+              allowClear
+              placeholder="Sélectionner un lieu..."
+              options={storageLocations.map((l) => ({ label: l.name, value: l.id }))}
+            />
+          </Form.Item>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center' }}>
+              <Button type="primary" htmlType="submit" loading={submitting}>
+                Enregistrer les modifications
+              </Button>
+            </div>
+          </Form.Item>
+
+        </Form>
+      </div>
     </Layout>
   )
 }
