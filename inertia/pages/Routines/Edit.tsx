@@ -1,6 +1,6 @@
-import { router, Link } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Empty, Form, Input, List, Modal, Popconfirm, Select, Tag, Typography } from 'antd'
+import { Button, Form, Input, Select } from 'antd'
 import Layout from '~/components/Layout'
 
 interface RoutineEditData {
@@ -8,13 +8,7 @@ interface RoutineEditData {
   name: string
   content: string | null
   categoryIds: number[]
-}
-
-interface MaterialItem {
-  id: number
-  name: string
-  type: { id: number; name: string } | null
-  storageLocation: { id: number; name: string } | null
+  materials: { id: number; name: string }[]
 }
 
 interface MaterialOption {
@@ -28,160 +22,162 @@ interface CategoryItem {
 }
 
 interface Props {
-  routine: RoutineEditData & { materials: MaterialItem[] }
+  routine: RoutineEditData
   categories: CategoryItem[]
   allMaterials: MaterialOption[]
+}
+
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: '#8c8c8c',
+  marginBottom: 16,
+  marginTop: 4,
 }
 
 export default function RoutinesEdit({ routine, categories, allMaterials }: Props) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedMaterialIds, setSelectedMaterialIds] = useState<number[]>([])
-  const [submittingMaterial, setSubmittingMaterial] = useState(false)
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(routine.categoryIds)
 
-  const handleSubmit = (values: {
-    name: string
-    categoryIds?: number[]
-    content?: string | null
-  }) => {
+  const toggleCategory = (id: number) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
+  const handleSubmit = (values: { name: string; content?: string | null; materialIds?: number[] }) => {
     setSubmitting(true)
-    router.put(`/routines/${routine.id}`, values, {
+    router.put(`/routines/${routine.id}`, { ...values, categoryIds: selectedCategoryIds }, {
       onFinish: () => setSubmitting(false),
     })
   }
 
-  const handleAttach = () => {
-    if (selectedMaterialIds.length === 0) return
-    setSubmittingMaterial(true)
-    router.post(
-      `/routines/${routine.id}/materials`,
-      { materialIds: selectedMaterialIds },
-      {
-        onSuccess: () => {
-          setModalOpen(false)
-          setSelectedMaterialIds([])
-        },
-        onFinish: () => setSubmittingMaterial(false),
-      }
-    )
-  }
-
   return (
-    <Layout title="Modifier">
-      <Typography.Title level={1}>Modifier la routine</Typography.Title>
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        style={{ maxWidth: 600 }}
-        initialValues={{
-          name: routine.name,
-          categoryIds: routine.categoryIds,
-          content: routine.content ?? '',
-        }}
-      >
-        <Form.Item
-          name="name"
-          label="Nom"
-          rules={[{ required: true, message: 'Le nom est requis' }]}
+    <Layout title="Modifier la routine" breadcrumbLabels={{ [String(routine.id)]: routine.name }}>
+      <div style={{ marginBottom: 32, maxWidth: 680, margin: '0 auto 32px' }}>
+        <h1 style={{
+          fontFamily: '"Newsreader", serif',
+          fontSize: 48,
+          fontWeight: 400,
+          color: '#583b00',
+          lineHeight: 1.1,
+          margin: '8px 0 8px',
+        }}>
+          Modifier la routine
+        </h1>
+        <p style={{ color: '#54433a', fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 520 }}>
+          Mettez à jour les informations et le contenu de cette routine.
+        </p>
+      </div>
+
+      <div style={{
+        background: '#ffffff',
+        borderRadius: 12,
+        padding: '32px 40px',
+        maxWidth: 680,
+        margin: '0 auto',
+      }}>
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          initialValues={{
+            name: routine.name,
+            content: routine.content ?? '',
+            materialIds: routine.materials.map((m) => m.id),
+          }}
         >
-          <Input placeholder="Ex: La pièce voyageuse, Le détective..." />
-        </Form.Item>
 
-        <Form.Item name="categoryIds" label="Catégorie(s)">
-          <Select
-            mode="multiple"
-            allowClear
-            placeholder="Sélectionner des catégories..."
-            options={categories.map((c) => ({ label: c.name, value: c.id }))}
-          />
-        </Form.Item>
+          <p style={sectionLabel}>Identité</p>
 
-        <Form.Item name="content" label="Contenu">
-          <Input.TextArea
-            autoSize={{ minRows: 10, maxRows: 30 }}
-            placeholder="Écrivez votre script, mise en scène, déroulé technique..."
-          />
-        </Form.Item>
+          <Form.Item
+            name="name"
+            label="Nom"
+            rules={[{ required: true, message: 'Le nom est requis' }]}
+          >
+            <Input placeholder="Ex: La pièce voyageuse, Le détective..." />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
-            Enregistrer
-          </Button>
-          <Button onClick={() => router.visit(`/routines/${routine.id}`)}>Annuler</Button>
-        </Form.Item>
-      </Form>
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-      <Typography.Title level={3} style={{ marginTop: 32 }}>
-        Matériel utilisé
-      </Typography.Title>
+          <p style={sectionLabel}>Catégories</p>
 
-      <Button onClick={() => setModalOpen(true)} style={{ marginBottom: 16 }}>
-        Ajouter du matériel
-      </Button>
+          <Form.Item label="Catégories">
+            {categories.length === 0 ? (
+              <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {categories.map((cat) => {
+                  const selected = selectedCategoryIds.includes(cat.id)
+                  return (
+                    <span
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
+                      style={{
+                        cursor: 'pointer',
+                        background: selected ? '#583b00' : '#fff8e8',
+                        color: selected ? '#ffffff' : '#583b00',
+                        border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
+                        borderRadius: 6,
+                        padding: '4px 12px',
+                        fontSize: 13,
+                        fontWeight: 500,
+                        fontFamily: '"Manrope", sans-serif',
+                        userSelect: 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {cat.name}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </Form.Item>
 
-      {routine.materials.length === 0 ? (
-        <Empty description="Aucun matériel lié à cette routine" />
-      ) : (
-        <List
-          bordered
-          dataSource={routine.materials}
-          renderItem={(m) => (
-            <List.Item
-              actions={[
-                <Popconfirm
-                  key="retirer"
-                  title="Retirer ce matériel de la routine ?"
-                  onConfirm={() => router.delete(`/routines/${routine.id}/materials/${m.id}`)}
-                  okText="Retirer"
-                  cancelText="Annuler"
-                >
-                  <Button danger size="small">
-                    Retirer
-                  </Button>
-                </Popconfirm>,
-              ]}
-            >
-              <List.Item.Meta
-                title={<Link href={`/materials/${m.id}`}>{m.name}</Link>}
-                description={
-                  <>
-                    {m.type ? <Tag color="blue">{m.type.name}</Tag> : '—'}
-                    {m.storageLocation ? ` · ${m.storageLocation.name}` : ''}
-                  </>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      )}
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-      <Modal
-        title="Ajouter du matériel"
-        open={modalOpen}
-        onCancel={() => {
-          setModalOpen(false)
-          setSelectedMaterialIds([])
-        }}
-        onOk={handleAttach}
-        confirmLoading={submittingMaterial}
-        okText="Ajouter"
-        cancelText="Annuler"
-      >
-        <Select
-          mode="multiple"
-          style={{ width: '100%' }}
-          placeholder="Rechercher du matériel..."
-          filterOption={(input, option) =>
-            typeof option?.label === 'string' &&
-            option.label.toLowerCase().includes(input.toLowerCase())
-          }
-          options={allMaterials.map((m) => ({ label: m.name, value: m.id }))}
-          onChange={(values) => setSelectedMaterialIds(values)}
-          value={selectedMaterialIds}
-        />
-      </Modal>
+          <p style={sectionLabel}>Matériel</p>
+
+          <Form.Item name="materialIds" label="Matériel utilisé">
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Rechercher et ajouter du matériel..."
+              filterOption={(input, option) =>
+                typeof option?.label === 'string' &&
+                option.label.toLowerCase().includes(input.toLowerCase())
+              }
+              options={allMaterials.map((m) => ({ label: m.name, value: m.id }))}
+            />
+          </Form.Item>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <p style={sectionLabel}>Contenu</p>
+
+          <Form.Item name="content" label="Notes">
+            <Input.TextArea
+              autoSize={{ minRows: 6, maxRows: 30 }}
+              placeholder="Écrivez votre script, mise en scène, déroulé technique..."
+            />
+          </Form.Item>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center' }}>
+              <Button type="primary" htmlType="submit" loading={submitting}>
+                Enregistrer les modifications
+              </Button>
+            </div>
+          </Form.Item>
+
+        </Form>
+      </div>
     </Layout>
   )
 }

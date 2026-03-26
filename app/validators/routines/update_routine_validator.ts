@@ -13,6 +13,7 @@ export const updateRoutineValidator = vine.compile(
     name: vine.string().trim().minLength(1).maxLength(255),
     categoryIds: vine.array(vine.number()).optional(),
     content: vine.string().trim().maxLength(50000).optional().nullable(),
+    materialIds: vine.array(vine.number()).optional(),
   })
 )
 updateRoutineValidator.messagesProvider = frenchMessages

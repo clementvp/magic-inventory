@@ -25,12 +25,14 @@ export default class RoutinesController {
   }
 
   async create({ auth, inertia }: HttpContext) {
-    const categories = await Category.query()
-      .where('user_id', auth.user!.id)
-      .orderBy('name', 'asc')
+    const [categories, allMaterials] = await Promise.all([
+      Category.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),
+      Material.query().where('user_id', auth.user!.id).orderBy('name', 'asc'),
+    ])
 
     return inertia.render('Routines/Create', {
       categories: categories.map((c) => ({ id: c.id, name: c.name })),
+      allMaterials: allMaterials.map((m) => ({ id: m.id, name: m.name })),
     })
   }
 
@@ -41,11 +43,20 @@ export default class RoutinesController {
       const routine = await Routine.create({
         userId: auth.user!.id,
         name: data.name,
-        content: null,
+        content: data.content || null,
       })
 
       if (data.categoryIds && data.categoryIds.length > 0) {
         await routine.related('categories').attach(data.categoryIds)
+      }
+
+      if (data.materialIds && data.materialIds.length > 0) {
+        const ownedMaterials = await Material.query()
+          .whereIn('id', data.materialIds)
+          .where('user_id', auth.user!.id)
+        if (ownedMaterials.length === data.materialIds.length) {
+          await routine.related('materials').attach(data.materialIds)
+        }
       }
 
       session.flash('success', 'Routine créée avec succès')
@@ -145,6 +156,17 @@ export default class RoutinesController {
       await routine.save()
 
       await routine.related('categories').sync(data.categoryIds ?? [])
+
+      if (data.materialIds !== undefined) {
+        const ownedMaterials = await Material.query()
+          .whereIn('id', data.materialIds)
+          .where('user_id', auth.user!.id)
+        if (ownedMaterials.length !== data.materialIds.length) {
+          session.flash('error', 'Matériel invalide')
+          return response.redirect().back()
+        }
+        await routine.related('materials').sync(data.materialIds)
+      }
 
       session.flash('success', 'Routine modifiée avec succès')
       return response.redirect().toPath(`/routines/${routine.id}`)
