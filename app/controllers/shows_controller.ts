@@ -18,7 +18,7 @@ export default class ShowsController {
       shows: shows.map((s) => ({
         id: s.id,
         name: s.name,
-        routinesCount: Number(s.$extras.routinesCount),
+        routinesCount: Number(s.$extras.routines_count ?? 0),
         createdAt: s.createdAt.toISO() ?? '',
       })),
     })
@@ -28,7 +28,7 @@ export default class ShowsController {
     const show = await Show.query()
       .where('user_id', auth.user!.id)
       .where('id', params.id)
-      .preload('routines', (q) => q.preload('categories'))
+      .preload('routines', (q) => q.preload('categories').orderBy('routine_show.order', 'asc'))
       .firstOrFail()
 
     return inertia.render('Shows/Show', {
@@ -37,17 +37,29 @@ export default class ShowsController {
         name: show.name,
         notes: show.notes,
         createdAt: show.createdAt.toISO() ?? '',
-        routines: show.routines.map((r) => ({
+        routines: show.routines.map((r, index) => ({
           id: r.id,
           name: r.name,
+          order: r.$extras.pivot_order ?? index,
           categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
         })),
       },
     })
   }
 
-  async create({ inertia }: HttpContext) {
-    return inertia.render('Shows/Create')
+  async create({ auth, inertia }: HttpContext) {
+    const allRoutines = await Routine.query()
+      .where('user_id', auth.user!.id)
+      .preload('categories')
+      .orderBy('name', 'asc')
+
+    return inertia.render('Shows/Create', {
+      allRoutines: allRoutines.map((r) => ({
+        id: r.id,
+        name: r.name,
+        categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
+      })),
+    })
   }
 
   async store({ auth, request, session, response }: HttpContext) {
@@ -57,10 +69,26 @@ export default class ShowsController {
       const show = await Show.create({
         userId: auth.user!.id,
         name: data.name,
+        notes: data.notes || null,
       })
 
+      if (data.routineIds && data.routineIds.length > 0) {
+        const uniqueRoutineIds = [...new Set(data.routineIds)]
+        const ownedRoutines = await Routine.query()
+          .whereIn('id', uniqueRoutineIds)
+          .where('user_id', auth.user!.id)
+
+        if (ownedRoutines.length === uniqueRoutineIds.length) {
+          const syncData: Record<number, { order: number }> = {}
+          uniqueRoutineIds.forEach((id, index) => {
+            syncData[id] = { order: index }
+          })
+          await show.related('routines').sync(syncData)
+        }
+      }
+
       session.flash('success', 'Spectacle créé avec succès')
-      return response.redirect().toPath(`/shows/${show.id}/edit`)
+      return response.redirect().toPath(`/shows/${show.id}`)
     } catch (error) {
       logger.error('Failed to create show', { error, data })
       session.flash('error', 'Une erreur est survenue lors de la création du spectacle')
@@ -72,11 +100,12 @@ export default class ShowsController {
     const show = await Show.query()
       .where('user_id', auth.user!.id)
       .where('id', params.id)
-      .preload('routines', (q) => q.preload('categories'))
+      .preload('routines', (q) => q.preload('categories').orderBy('routine_show.order', 'asc'))
       .firstOrFail()
 
     const allRoutines = await Routine.query()
       .where('user_id', auth.user!.id)
+      .preload('categories')
       .orderBy('name', 'asc')
 
     return inertia.render('Shows/Edit', {
@@ -84,13 +113,18 @@ export default class ShowsController {
         id: show.id,
         name: show.name,
         notes: show.notes,
+        routineIds: show.routines.map((r) => r.id),
         routines: show.routines.map((r) => ({
           id: r.id,
           name: r.name,
           categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
         })),
       },
-      allRoutines: allRoutines.map((r) => ({ id: r.id, name: r.name })),
+      allRoutines: allRoutines.map((r) => ({
+        id: r.id,
+        name: r.name,
+        categories: r.categories.map((c) => ({ id: c.id, name: c.name })),
+      })),
     })
   }
 
@@ -107,6 +141,24 @@ export default class ShowsController {
       show.notes = data.notes || null
       await show.save()
 
+      const routineIds = data.routineIds ?? []
+      if (routineIds.length > 0) {
+        const uniqueRoutineIds = [...new Set(routineIds)]
+        const ownedRoutines = await Routine.query()
+          .whereIn('id', uniqueRoutineIds)
+          .where('user_id', auth.user!.id)
+
+        if (ownedRoutines.length === uniqueRoutineIds.length) {
+          const syncData: Record<number, { order: number }> = {}
+          uniqueRoutineIds.forEach((id, index) => {
+            syncData[id] = { order: index }
+          })
+          await show.related('routines').sync(syncData)
+        }
+      } else {
+        await show.related('routines').sync([])
+      }
+
       session.flash('success', 'Spectacle modifié avec succès')
       return response.redirect().toPath(`/shows/${show.id}`)
     } catch (error) {
@@ -121,7 +173,9 @@ export default class ShowsController {
       .where('user_id', auth.user!.id)
       .where('id', params.id)
       .preload('routines', (q) =>
-        q.preload('materials', (mq) => mq.preload('type').preload('storageLocation'))
+        q
+          .preload('materials', (mq) => mq.preload('type').preload('storageLocation'))
+          .orderBy('routine_show.order', 'asc')
       )
       .firstOrFail()
 
@@ -222,7 +276,7 @@ export default class ShowsController {
 
     const linked = await show.related('routines').query().where('id', params.routineId).first()
     if (!linked) {
-      session.flash('error', 'Cette routine n\'est pas liée à ce spectacle')
+      session.flash('error', "Cette routine n'est pas liée à ce spectacle")
       return response.redirect().back()
     }
 

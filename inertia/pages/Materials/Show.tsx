@@ -1,3 +1,4 @@
+import React from 'react'
 import { router, Link } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { Badge, Button, Drawer, Input, message, Select, Space, Table, Typography } from 'antd'
@@ -32,6 +33,22 @@ const typeTagStyle = {
   borderRadius: 4,
   backgroundColor: '#ffdeac',
   color: '#604100',
+}
+
+const metaLabelStyle: React.CSSProperties = {
+  fontFamily: '"Manrope", sans-serif',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  color: '#a8a29e',
+  textTransform: 'uppercase',
+  marginBottom: 6,
+}
+
+const metaValueStyle: React.CSSProperties = {
+  fontFamily: '"Manrope", sans-serif',
+  fontSize: 14,
+  color: '#54433a',
 }
 
 interface RoutineItem {
@@ -114,66 +131,94 @@ export default function MaterialsShow({ material }: Props) {
 
   return (
     <Layout title={material.name}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        paddingBottom: 32,
-        marginBottom: 40,
-        borderBottom: '1px solid #e5e2e1',
-      }}>
-        <div>
-          <h1 style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: '0 0 8px' }}>
+      <div style={{ marginBottom: 40 }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: 0,
+        }}>
+          <h1 style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 48, fontWeight: 400, color: '#583b00', lineHeight: 1.1, margin: 0 }}>
             {material.name}
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 4 }}>
-            <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
-              Ajouté le {dayjs(material.createdAt).format('DD MMMM YYYY')}
-            </span>
-            {material.type && (
-              <>
-                <span style={{ color: '#a8a29e' }}>·</span>
-                <span style={typeTagStyle}>{material.type.name}</span>
-              </>
-            )}
+          <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 24 }}>
+            <Button onClick={() => router.visit(`/materials/${material.id}/edit`)} icon={<Icon name="edit" style={{ fontSize: 16 }} />}>
+              Modifier
+            </Button>
+            <Button
+              danger
+              loading={deleting}
+              icon={<Icon name="delete" style={{ fontSize: 16 }} />}
+              onClick={() => setDeleteModalOpen(true)}
+            >
+              Supprimer
+            </Button>
           </div>
-          {material.categories.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-              {material.categories.map((c) => (
-                <span key={c.id} style={tagStyle}>{c.name}</span>
-              ))}
-            </div>
-          )}
-          {(material.storageLocation || material.author) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 10 }}>
-              {material.storageLocation && (
-                <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
-                  Stocké dans <Link href={`/storage-locations/${material.storageLocation.id}`}>{material.storageLocation.name}</Link>
-                </span>
-              )}
-              {material.storageLocation && material.author && (
-                <span style={{ color: '#a8a29e' }}>·</span>
-              )}
-              {material.author && (
-                <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 14, color: '#54433a' }}>
-                  {material.author}
-                </span>
-              )}
-            </div>
-          )}
         </div>
-        <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 24 }}>
-          <Button onClick={() => router.visit(`/materials/${material.id}/edit`)} icon={<Icon name="edit" style={{ fontSize: 16 }} />}>
-            Modifier
-          </Button>
-          <Button
-            danger
-            loading={deleting}
-            icon={<Icon name="delete" style={{ fontSize: 16 }} />}
-            onClick={() => setDeleteModalOpen(true)}
-          >
-            Supprimer
-          </Button>
+
+        <div style={{ display: 'flex', gap: 40, marginTop: 24, paddingTop: 20, borderTop: '1px solid #e5e2e1', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          {material.type && (
+            <div>
+              <div style={metaLabelStyle}>Type</div>
+              <span style={typeTagStyle}>{material.type.name}</span>
+            </div>
+          )}
+          {material.categories.length > 0 && (
+            <div>
+              <div style={metaLabelStyle}>Catégories</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {material.categories.map((c) => (
+                  <span key={c.id} style={tagStyle}>{c.name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {material.storageLocation && (
+            <div>
+              <div style={metaLabelStyle}>Stocké dans</div>
+              <Link
+                href={`/storage-locations/${material.storageLocation.id}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '4px 8px 4px 10px',
+                  borderRadius: 6,
+                  border: '1px solid #e8d5a8',
+                  backgroundColor: '#fdf6ec',
+                  color: '#583b00',
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  transition: 'background-color 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget
+                  el.style.backgroundColor = '#f5e8c8'
+                  el.style.borderColor = '#c9a84c'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget
+                  el.style.backgroundColor = '#fdf6ec'
+                  el.style.borderColor = '#e8d5a8'
+                }}
+              >
+                {material.storageLocation.name}
+                <Icon name="chevron_right" style={{ fontSize: 14, color: '#a8813a' }} />
+              </Link>
+            </div>
+          )}
+          {material.author && (
+            <div>
+              <div style={metaLabelStyle}>Auteur</div>
+              <span style={metaValueStyle}>{material.author}</span>
+            </div>
+          )}
+          <div style={{ marginLeft: 'auto' }}>
+            <div style={metaLabelStyle}>Ajouté le</div>
+            <span style={metaValueStyle}>{dayjs(material.createdAt).format('DD MMMM YYYY')}</span>
+          </div>
         </div>
       </div>
 

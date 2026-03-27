@@ -12,6 +12,7 @@ export const updateShowValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(1).maxLength(255),
     notes: vine.string().trim().nullable().optional(),
+    routineIds: vine.array(vine.number()).optional(),
   })
 )
 updateShowValidator.messagesProvider = frenchMessages

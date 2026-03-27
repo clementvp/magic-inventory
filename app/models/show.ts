@@ -33,6 +33,7 @@ export default class Show extends BaseModel {
     relatedKey: 'id',
     pivotRelatedForeignKey: 'routine_id',
     pivotTimestamps: { createdAt: 'created_at', updatedAt: false },
+    pivotColumns: ['order'],
   })
   declare routines: ManyToMany<typeof Routine>
 }
