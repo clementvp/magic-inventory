@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react'
 import { useState } from 'react'
 import { Button, Form, Input, Select } from 'antd'
 import Layout from '~/components/Layout'
+import SectionAccordion from '~/components/SectionAccordion'
 
 interface MaterialEditData {
   id: number
@@ -34,16 +35,6 @@ interface Props {
   storageLocations: LocationItem[]
 }
 
-const sectionLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: '#8c8c8c',
-  marginBottom: 16,
-  marginTop: 4,
-}
-
 export default function MaterialsEdit({ material, types, categories, storageLocations }: Props) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
@@ -68,8 +59,8 @@ export default function MaterialsEdit({ material, types, categories, storageLoca
   }
 
   return (
-    <Layout title="Modifier">
-<div style={{ marginBottom: 32, maxWidth: 680, margin: '0 auto 32px' }}>
+    <Layout title="Modifier le matériel" breadcrumbLabels={{ [String(material.id)]: material.name }}>
+      <div style={{ marginBottom: 32, maxWidth: 1100, margin: '0 auto 32px' }}>
         <h1 style={{
           fontFamily: '"Newsreader", serif',
           fontSize: 48,
@@ -89,7 +80,7 @@ export default function MaterialsEdit({ material, types, categories, storageLoca
         background: '#ffffff',
         borderRadius: 12,
         padding: '32px 40px',
-        maxWidth: 680,
+        maxWidth: 1100,
         margin: '0 auto',
       }}>
         <Form
@@ -104,7 +95,7 @@ export default function MaterialsEdit({ material, types, categories, storageLoca
           }}
         >
 
-          <p style={sectionLabel}>Identité</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#583b00', marginBottom: 16, marginTop: 4 }}>Identité</p>
 
           <Form.Item
             name="name"
@@ -120,56 +111,60 @@ export default function MaterialsEdit({ material, types, categories, storageLoca
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-          <p style={sectionLabel}>Classification</p>
+          <SectionAccordion title="Classification">
+            <Form.Item name="typeId" label="Type">
+              <Select
+                allowClear
+                placeholder="Sélectionner un type..."
+                options={types.map((t) => ({ label: t.name, value: t.id }))}
+              />
+            </Form.Item>
 
-          <Form.Item name="typeId" label="Type">
-            <Select
-              allowClear
-              placeholder="Sélectionner un type..."
-              options={types.map((t) => ({ label: t.name, value: t.id }))}
-            />
-          </Form.Item>
+            <Form.Item label="Catégories">
+              {categories.length === 0 ? (
+                <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {categories.map((cat) => {
+                    const selected = selectedCategoryIds.includes(cat.id)
+                    return (
+                      <span
+                        key={cat.id}
+                        onClick={() => toggleCategory(cat.id)}
+                        style={{
+                          cursor: 'pointer',
+                          background: selected ? '#583b00' : '#fff8e8',
+                          color: selected ? '#ffffff' : '#583b00',
+                          border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
+                          borderRadius: 6,
+                          padding: '4px 12px',
+                          fontSize: 13,
+                          fontWeight: 500,
+                          fontFamily: '"Manrope", sans-serif',
+                          userSelect: 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {cat.name}
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
+            </Form.Item>
+          </SectionAccordion>
 
-          <Form.Item label="Catégories">
-            {categories.length === 0 ? (
-              <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
-            ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {categories.map((cat) => {
-                  const selected = selectedCategoryIds.includes(cat.id)
-                  return (
-                    <span
-                      key={cat.id}
-                      onClick={() => toggleCategory(cat.id)}
-                      style={{
-                        cursor: 'pointer',
-                        background: selected ? '#583b00' : '#fff8e8',
-                        color: selected ? '#ffffff' : '#583b00',
-                        border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
-                        borderRadius: 6,
-                        padding: '4px 12px',
-                        fontSize: 13,
-                        fontWeight: 500,
-                        fontFamily: '"Manrope", sans-serif',
-                        userSelect: 'none',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      {cat.name}
-                    </span>
-                  )
-                })}
-              </div>
-            )}
-          </Form.Item>
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-          <Form.Item name="storageLocationId" label="Lieu de stockage">
-            <Select
-              allowClear
-              placeholder="Sélectionner un lieu..."
-              options={storageLocations.map((l) => ({ label: l.name, value: l.id }))}
-            />
-          </Form.Item>
+          <SectionAccordion title="Lieu de stockage">
+            <Form.Item name="storageLocationId" label={null}>
+              <Select
+                allowClear
+                placeholder="Sélectionner un lieu..."
+                options={storageLocations.map((l) => ({ label: l.name, value: l.id }))}
+              />
+            </Form.Item>
+          </SectionAccordion>
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 

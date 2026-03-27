@@ -1,7 +1,9 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Form, Input, Select } from 'antd'
+import { Button, Form, Input } from 'antd'
 import Layout from '~/components/Layout'
+import SectionAccordion from '~/components/SectionAccordion'
+import MaterialPickerBuilder from '~/components/MaterialPickerBuilder'
 
 interface CategoryItem {
   id: number
@@ -18,20 +20,11 @@ interface Props {
   allMaterials: MaterialOption[]
 }
 
-const sectionLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: '#8c8c8c',
-  marginBottom: 16,
-  marginTop: 4,
-}
-
 export default function RoutinesCreate({ categories, allMaterials }: Props) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([])
+  const [materialIds, setMaterialIds] = useState<number[]>([])
 
   const toggleCategory = (id: number) => {
     setSelectedCategoryIds((prev) =>
@@ -39,9 +32,9 @@ export default function RoutinesCreate({ categories, allMaterials }: Props) {
     )
   }
 
-  const handleSubmit = (values: { name: string; content?: string; materialIds?: number[] }) => {
+  const handleSubmit = (values: { name: string; content?: string }) => {
     setSubmitting(true)
-    router.post('/routines', { ...values, categoryIds: selectedCategoryIds }, {
+    router.post('/routines', { ...values, categoryIds: selectedCategoryIds, materialIds }, {
       onFinish: () => setSubmitting(false),
       onError: () => setSubmitting(false),
     })
@@ -49,7 +42,7 @@ export default function RoutinesCreate({ categories, allMaterials }: Props) {
 
   return (
     <Layout title="Créer une routine">
-      <div style={{ marginBottom: 32, maxWidth: 680, margin: '0 auto 32px' }}>
+      <div style={{ marginBottom: 32, maxWidth: 1100, margin: '0 auto 32px' }}>
         <h1 style={{
           fontFamily: '"Newsreader", serif',
           fontSize: 48,
@@ -69,12 +62,12 @@ export default function RoutinesCreate({ categories, allMaterials }: Props) {
         background: '#ffffff',
         borderRadius: 12,
         padding: '32px 40px',
-        maxWidth: 680,
+        maxWidth: 1100,
         margin: '0 auto',
       }}>
         <Form form={form} onFinish={handleSubmit} layout="vertical">
 
-          <p style={sectionLabel}>Identité</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#583b00', marginBottom: 16, marginTop: 4 }}>Identité</p>
 
           <Form.Item
             name="name"
@@ -89,72 +82,63 @@ export default function RoutinesCreate({ categories, allMaterials }: Props) {
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-          <p style={sectionLabel}>Catégories</p>
-
-          <Form.Item label="Catégories">
-            {categories.length === 0 ? (
-              <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
-            ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {categories.map((cat) => {
-                  const selected = selectedCategoryIds.includes(cat.id)
-                  return (
-                    <span
-                      key={cat.id}
-                      onClick={() => toggleCategory(cat.id)}
-                      style={{
-                        cursor: 'pointer',
-                        background: selected ? '#583b00' : '#fff8e8',
-                        color: selected ? '#ffffff' : '#583b00',
-                        border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
-                        borderRadius: 6,
-                        padding: '4px 12px',
-                        fontSize: 13,
-                        fontWeight: 500,
-                        fontFamily: '"Manrope", sans-serif',
-                        userSelect: 'none',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      {cat.name}
-                    </span>
-                  )
-                })}
-              </div>
-            )}
-          </Form.Item>
+          <SectionAccordion title="Catégories">
+            <Form.Item label={null}>
+              {categories.length === 0 ? (
+                <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucune catégorie disponible</span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {categories.map((cat) => {
+                    const selected = selectedCategoryIds.includes(cat.id)
+                    return (
+                      <span
+                        key={cat.id}
+                        onClick={() => toggleCategory(cat.id)}
+                        style={{
+                          cursor: 'pointer',
+                          background: selected ? '#583b00' : '#fff8e8',
+                          color: selected ? '#ffffff' : '#583b00',
+                          border: `1px solid ${selected ? '#583b00' : '#dac2b6'}`,
+                          borderRadius: 6,
+                          padding: '4px 12px',
+                          fontSize: 13,
+                          fontWeight: 500,
+                          fontFamily: '"Manrope", sans-serif',
+                          userSelect: 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {cat.name}
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
+            </Form.Item>
+          </SectionAccordion>
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-          <p style={sectionLabel}>Matériel</p>
-
-          <Form.Item name="materialIds" label="Matériel utilisé">
-            {allMaterials.length === 0 ? (
-              <span style={{ color: '#8c8c8c', fontSize: 13 }}>Aucun matériel disponible</span>
-            ) : (
-              <Select
-                mode="multiple"
-                allowClear
-                placeholder="Rechercher et ajouter du matériel..."
-                filterOption={(input, option) =>
-                  typeof option?.label === 'string' &&
-                  option.label.toLowerCase().includes(input.toLowerCase())
-                }
-                options={allMaterials.map((m) => ({ label: m.name, value: m.id }))}
+          <SectionAccordion title="Notes">
+            <Form.Item name="content" label={null}>
+              <Input.TextArea
+                autoSize={{ minRows: 6, maxRows: 30 }}
+                placeholder="Écrivez votre script, mise en scène, déroulé technique..."
               />
-            )}
-          </Form.Item>
+            </Form.Item>
+          </SectionAccordion>
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 
-          <p style={sectionLabel}>Contenu</p>
-
-          <Form.Item name="content" label="Notes">
-            <Input.TextArea
-              autoSize={{ minRows: 6, maxRows: 30 }}
-              placeholder="Écrivez votre script, mise en scène, déroulé technique..."
-            />
-          </Form.Item>
+          <SectionAccordion title="Matériel">
+            <Form.Item label={null}>
+              <MaterialPickerBuilder
+                allMaterials={allMaterials}
+                value={materialIds}
+                onChange={setMaterialIds}
+              />
+            </Form.Item>
+          </SectionAccordion>
 
           <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
 

@@ -1,15 +1,11 @@
 import { router } from '@inertiajs/react'
 import { useState } from 'react'
-import { Button, Empty, Form, Input, List, Modal, Select, Tag, Typography } from 'antd'
+import { Button, Form, Input } from 'antd'
 import Layout from '~/components/Layout'
-import DeleteModal from '~/components/DeleteModal'
+import RoutineSetlistBuilder from '~/components/RoutineSetlistBuilder'
+import SectionAccordion from '~/components/SectionAccordion'
 
 interface RoutineOption {
-  id: number
-  name: string
-}
-
-interface LinkedRoutine {
   id: number
   name: string
   categories: { id: number; name: string }[]
@@ -19,7 +15,7 @@ interface ShowEditData {
   id: number
   name: string
   notes?: string | null
-  routines: LinkedRoutine[]
+  routineIds: number[]
 }
 
 interface Props {
@@ -27,18 +23,15 @@ interface Props {
   allRoutines: RoutineOption[]
 }
 
+
 export default function ShowsEdit({ show, allRoutines }: Props) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedRoutineIds, setSelectedRoutineIds] = useState<number[]>([])
-  const [submittingRoutine, setSubmittingRoutine] = useState(false)
-  const [removingRoutine, setRemovingRoutine] = useState<{ id: number; name: string } | null>(null)
-  const [isRemoving, setIsRemoving] = useState(false)
+  const [routineIds, setRoutineIds] = useState<number[]>(show.routineIds)
 
   const handleSubmit = (values: { name: string; notes?: string }) => {
     setSubmitting(true)
-    router.put(`/shows/${show.id}`, values, {
+    router.put(`/shows/${show.id}`, { ...values, routineIds }, {
       onFinish: () => setSubmitting(false),
       onError: (errors) => {
         form.setFields(
@@ -48,149 +41,90 @@ export default function ShowsEdit({ show, allRoutines }: Props) {
     })
   }
 
-  const linkedRoutineIds = new Set(show.routines.map((r) => r.id))
-  const availableRoutines = allRoutines.filter((r) => !linkedRoutineIds.has(r.id))
-
-  const handleRemoveConfirm = () => {
-    if (!removingRoutine) return
-    setIsRemoving(true)
-    router.delete(`/shows/${show.id}/routines/${removingRoutine.id}`, {
-      onFinish: () => {
-        setIsRemoving(false)
-        setRemovingRoutine(null)
-      },
-    })
-  }
-
-  const handleAttach = () => {
-    if (selectedRoutineIds.length === 0) return
-    setSubmittingRoutine(true)
-    router.post(
-      `/shows/${show.id}/routines`,
-      { routineIds: selectedRoutineIds },
-      {
-        onSuccess: () => {
-          setModalOpen(false)
-          setSelectedRoutineIds([])
-        },
-        onFinish: () => setSubmittingRoutine(false),
-      }
-    )
-  }
-
   return (
-    <Layout title="Modifier le spectacle">
-      <Typography.Title level={1}>Modifier le spectacle</Typography.Title>
-
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        style={{ maxWidth: 600 }}
-        initialValues={{ name: show.name, notes: show.notes ?? '' }}
-      >
-        <Form.Item
-          name="name"
-          label="Nom"
-          rules={[{ required: true, message: 'Le nom est requis' }]}
+    <Layout title="Modifier le spectacle" breadcrumbLabels={{ [String(show.id)]: show.name }}>
+      <div style={{ marginBottom: 32, maxWidth: 1100, margin: '0 auto 32px' }}>
+        <h1
+          style={{
+            fontFamily: '"Newsreader", serif',
+            fontSize: 48,
+            fontWeight: 400,
+            color: '#583b00',
+            lineHeight: 1.1,
+            margin: '8px 0 8px',
+          }}
         >
-          <Input placeholder="Ex: Soirée mariage, Festival d'été..." />
-        </Form.Item>
+          Modifier le spectacle
+        </h1>
+        <p style={{ color: '#54433a', fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 520 }}>
+          Modifiez le programme, l'ordre des routines et les notes du spectacle.
+        </p>
+      </div>
 
-        <Form.Item name="notes" label="Notes">
-          <Input.TextArea
-            autoSize={{ minRows: 10, maxRows: 30 }}
-            placeholder="Notes, annotations, consignes pour ce spectacle..."
-          />
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
-            Enregistrer
-          </Button>
-          <Button onClick={() => router.visit(`/shows/${show.id}`)}>Annuler</Button>
-        </Form.Item>
-      </Form>
-
-      <Typography.Title level={3} style={{ marginTop: 32 }}>
-        Routines du spectacle
-      </Typography.Title>
-
-      <Button onClick={() => setModalOpen(true)} style={{ marginBottom: 16 }}>
-        Ajouter des routines
-      </Button>
-
-      {show.routines.length === 0 ? (
-        <Empty description="Aucune routine dans ce spectacle" />
-      ) : (
-        <List
-          bordered
-          dataSource={show.routines}
-          renderItem={(r) => (
-            <List.Item
-              actions={[
-                <Button
-                  key="retirer"
-                  danger
-                  size="small"
-                  loading={isRemoving && removingRoutine?.id === r.id}
-                  onClick={() => setRemovingRoutine({ id: r.id, name: r.name })}
-                >
-                  Retirer
-                </Button>,
-              ]}
-            >
-              <List.Item.Meta
-                title={r.name}
-                description={
-                  r.categories.length > 0
-                    ? r.categories.map((c) => (
-                        <Tag key={c.id}>{c.name}</Tag>
-                      ))
-                    : '—'
-                }
-              />
-            </List.Item>
-          )}
-        />
-      )}
-
-      <DeleteModal
-        open={removingRoutine !== null}
-        itemName={removingRoutine?.name ?? ''}
-        entityLabel="cette routine du spectacle"
-        confirmText="Retirer"
-        loading={isRemoving}
-        onConfirm={handleRemoveConfirm}
-        onCancel={() => setRemovingRoutine(null)}
-      />
-
-      <Modal
-        title="Ajouter des routines"
-        open={modalOpen}
-        onCancel={() => {
-          setModalOpen(false)
-          setSelectedRoutineIds([])
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: 12,
+          padding: '32px 40px',
+          maxWidth: 1100,
+          margin: '0 auto',
         }}
-        onOk={handleAttach}
-        confirmLoading={submittingRoutine}
-        okText="Ajouter"
-        okButtonProps={{ disabled: selectedRoutineIds.length === 0 }}
-        cancelText="Annuler"
       >
-        <Select
-          mode="multiple"
-          style={{ width: '100%' }}
-          placeholder="Rechercher une routine..."
-          filterOption={(input, option) =>
-            typeof option?.label === 'string' &&
-            option.label.toLowerCase().includes(input.toLowerCase())
-          }
-          options={availableRoutines.map((r) => ({ label: r.name, value: r.id }))}
-          onChange={(values) => setSelectedRoutineIds(values)}
-          value={selectedRoutineIds}
-        />
-      </Modal>
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          initialValues={{ name: show.name, notes: show.notes ?? '' }}
+        >
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#583b00', marginBottom: 16, marginTop: 4 }}>Identité</p>
+
+          <Form.Item
+            name="name"
+            label="Nom"
+            rules={[
+              { required: true, message: 'Le nom est requis' },
+              { whitespace: true, message: 'Le nom est requis' },
+            ]}
+          >
+            <Input placeholder="Ex: Soirée mariage, Festival d'été, Corporate Lyon..." />
+          </Form.Item>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <SectionAccordion title="Notes">
+            <Form.Item name="notes" label={null}>
+              <Input.TextArea
+                autoSize={{ minRows: 4, maxRows: 20 }}
+                placeholder="Contexte, consignes de scène, timing, notes techniques..."
+              />
+            </Form.Item>
+          </SectionAccordion>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <SectionAccordion title="Programme">
+            <Form.Item label={null}>
+              <RoutineSetlistBuilder
+                allRoutines={allRoutines}
+                value={routineIds}
+                onChange={setRoutineIds}
+              />
+            </Form.Item>
+          </SectionAccordion>
+
+          <div style={{ borderTop: '1px solid #f0ebe8', margin: '8px 0 24px' }} />
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <div
+              style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Button type="primary" htmlType="submit" loading={submitting}>
+                Enregistrer les modifications
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </div>
     </Layout>
   )
 }
