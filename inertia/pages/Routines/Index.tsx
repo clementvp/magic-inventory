@@ -288,7 +288,7 @@ export default function RoutinesIndex({ routines }: Props) {
 
   return (
     <Layout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h1 style={{
             fontFamily: '"Newsreader", serif',
@@ -309,7 +309,7 @@ export default function RoutinesIndex({ routines }: Props) {
             Gérez vos enchaînements magiques et vos performances scéniques avec précision.
           </p>
         </div>
-        <Space>
+        <Space wrap>
           <Input.Search
             placeholder="Rechercher par nom..."
             value={searchInput}
