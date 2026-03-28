@@ -21,6 +21,8 @@ const tagStyle = {
   borderRadius: 4,
   backgroundColor: '#ffe088',
   color: '#574500',
+  display: 'inline-block' as const,
+  lineHeight: '18px',
 }
 
 const typeTagStyle = {
@@ -33,6 +35,8 @@ const typeTagStyle = {
   borderRadius: 4,
   backgroundColor: '#ffdeac',
   color: '#604100',
+  display: 'inline-block' as const,
+  lineHeight: '18px',
 }
 
 const metaLabelStyle: React.CSSProperties = {
