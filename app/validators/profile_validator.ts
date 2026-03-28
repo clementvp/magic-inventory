@@ -12,6 +12,8 @@ const frenchMessages = new SimpleMessagesProvider({
   'minLength': 'Ce champ doit contenir au moins {{ min }} caractères',
   'maxLength': 'Ce champ ne peut pas dépasser {{ max }} caractères',
   'database.unique': 'Cet email est déjà utilisé',
+  'confirmed': 'Les mots de passe ne correspondent pas',
+  'regex': 'Le format de ce champ est invalide',
 
   // Messages spécifiques par champ
   'fullName.required': 'Veuillez saisir votre nom complet',
@@ -20,6 +22,12 @@ const frenchMessages = new SimpleMessagesProvider({
   'email.required': 'Veuillez saisir votre email',
   'email.email': 'Email invalide',
   'email.database.unique': 'Cet email est déjà utilisé',
+  'currentPassword.required': 'Veuillez saisir votre mot de passe actuel',
+  'newPassword.required': 'Veuillez saisir votre nouveau mot de passe',
+  'newPassword.minLength': 'Le mot de passe doit contenir au moins {{ min }} caractères',
+  'newPassword.regex': 'Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre',
+  'newPasswordConfirmation.required': 'Veuillez confirmer votre nouveau mot de passe',
+  'newPasswordConfirmation.confirmed': 'Les mots de passe ne correspondent pas',
 })
 
 /**
@@ -43,3 +51,16 @@ export const updateProfileValidator = vine.compile(
 )
 
 updateProfileValidator.messagesProvider = frenchMessages
+
+/**
+ * Validator pour le changement de mot de passe
+ */
+export const changePasswordValidator = vine.compile(
+  vine.object({
+    currentPassword: vine.string(),
+    newPassword: vine.string().minLength(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+    newPasswordConfirmation: vine.string().confirmed({ confirmationField: 'newPassword' }),
+  })
+)
+
+changePasswordValidator.messagesProvider = frenchMessages

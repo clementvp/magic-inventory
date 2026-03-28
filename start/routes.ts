@@ -42,6 +42,8 @@ router
     router.post('/logout', [AuthController, 'logout'])
     router.get('/profile', [ProfileController, 'edit']).as('profile.edit')
     router.get('/profile/export', [ProfileController, 'export']).as('profile.export')
+    router.post('/profile/import', [ProfileController, 'import']).as('profile.import')
+    router.post('/profile/password', [ProfileController, 'changePassword']).as('profile.changePassword')
     router.post('/profile', [ProfileController, 'update']).as('profile.update')
     router.delete('/profile', [ProfileController, 'destroy']).as('profile.destroy')
     router.resource('categories', CategoriesController).only(['index', 'store', 'update', 'destroy'])
