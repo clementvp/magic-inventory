@@ -225,30 +225,33 @@ export default function RoutinesIndex({ routines }: Props) {
     <>
       <Row gutter={[16, 16]}>
         {paginatedRoutines.map((r) => (
-          <Col xs={24} sm={12} md={8} key={r.id}>
+          <Col xs={24} sm={12} md={8} key={r.id} style={{ display: 'flex' }}>
             <Card
               hoverable
               onClick={() => router.visit(`/routines/${r.id}`)}
-              extra={
-                <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
-                    onClick={() => router.visit(`/routines/${r.id}/edit`)}
-                    title="Modifier"
-                  />
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                    title="Supprimer"
-                    loading={isDeleting && deletingItem?.id === r.id}
-                    onClick={() => handleDeleteRequest({ id: r.id, name: r.name })}
-                  />
-                </span>
-              }
+              style={{ width: '100%' }}
+              styles={{ body: { paddingTop: 40, position: 'relative' } }}
             >
+              <div
+                style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4, zIndex: 1 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icon name="edit" style={{ fontSize: 20, color: '#583b00' }} />}
+                  onClick={() => router.visit(`/routines/${r.id}/edit`)}
+                  title="Modifier"
+                />
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icon name="delete" style={{ fontSize: 20, color: '#99443e' }} />}
+                  title="Supprimer"
+                  loading={isDeleting && deletingItem?.id === r.id}
+                  onClick={() => handleDeleteRequest({ id: r.id, name: r.name })}
+                />
+              </div>
               <Card.Meta
                 title={r.name}
                 description={

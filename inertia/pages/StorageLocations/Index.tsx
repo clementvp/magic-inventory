@@ -230,28 +230,31 @@ export default function StorageLocationsIndex({ storageLocations }: Props) {
         storageLocations.length === 0 ? cardsEmptyState : (
           <Row gutter={[16, 16]}>
             {storageLocations.map((loc) => (
-              <Col xs={24} sm={12} md={8} key={loc.id}>
+              <Col xs={24} sm={12} md={8} key={loc.id} style={{ display: 'flex' }}>
                 <Card
                   hoverable
                   onClick={() => router.visit(`/storage-locations/${loc.id}`)}
-                  extra={
-                    <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        type="text"
-                        icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
-                        onClick={() => handleEdit(loc)}
-                        title="Modifier"
-                      />
-                      <Button
-                        type="text"
-                        icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                        title="Supprimer"
-                        loading={isDeleting && deletingItem?.id === loc.id}
-                        onClick={() => handleDeleteRequest({ id: loc.id, name: loc.name })}
-                      />
-                    </span>
-                  }
+                  style={{ width: '100%' }}
+                  styles={{ body: { paddingTop: 48, position: 'relative' } }}
                 >
+                  <div
+                    style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4, zIndex: 1 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      type="text"
+                      icon={<Icon name="edit" style={{ fontSize: 20, color: '#583b00' }} />}
+                      onClick={() => handleEdit(loc)}
+                      title="Modifier"
+                    />
+                    <Button
+                      type="text"
+                      icon={<Icon name="delete" style={{ fontSize: 20, color: '#99443e' }} />}
+                      title="Supprimer"
+                      loading={isDeleting && deletingItem?.id === loc.id}
+                      onClick={() => handleDeleteRequest({ id: loc.id, name: loc.name })}
+                    />
+                  </div>
                   <Card.Meta
                     title={loc.name}
                     description={

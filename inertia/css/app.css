@@ -81,3 +81,12 @@ h1, h2, h3, h4, h5, h6 {
   background: #dac2b6;
   border-radius: 10px;
 }
+
+/* Card meta title: wrap up to 2 lines instead of single-line ellipsis */
+.ant-card-meta-title {
+  white-space: normal !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}

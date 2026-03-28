@@ -130,7 +130,7 @@ export default function NotesIndex({ notes }: Props) {
         <>
           <Row gutter={[16, 16]}>
             {notes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((note) => (
-              <Col xs={24} sm={12} md={8} key={note.id}>
+              <Col xs={24} sm={12} md={8} key={note.id} style={{ display: 'flex' }}>
                 <Card
                   hoverable
                   data-testid={`note-card-${note.id}`}
@@ -141,26 +141,29 @@ export default function NotesIndex({ notes }: Props) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') router.visit(`/notes/${note.id}/edit`)
                   }}
-                  extra={
-                    <span style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<Icon name="edit" style={{ fontSize: 16, color: '#583b00' }} />}
-                        onClick={() => router.visit(`/notes/${note.id}/edit`)}
-                        title="Modifier"
-                      />
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<Icon name="delete" style={{ fontSize: 16, color: '#99443e' }} />}
-                        title="Supprimer"
-                        loading={isDeleting && deletingItem?.id === note.id}
-                        onClick={() => handleDeleteRequest({ id: note.id, name: note.title || 'Note sans titre' })}
-                      />
-                    </span>
-                  }
+                  style={{ width: '100%' }}
+                  styles={{ body: { paddingTop: 40, position: 'relative' } }}
                 >
+                  <div
+                    style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4, zIndex: 1 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icon name="edit" style={{ fontSize: 20, color: '#583b00' }} />}
+                      onClick={() => router.visit(`/notes/${note.id}/edit`)}
+                      title="Modifier"
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icon name="delete" style={{ fontSize: 20, color: '#99443e' }} />}
+                      title="Supprimer"
+                      loading={isDeleting && deletingItem?.id === note.id}
+                      onClick={() => handleDeleteRequest({ id: note.id, name: note.title || 'Note sans titre' })}
+                    />
+                  </div>
                   <Card.Meta
                     title={note.title || '(Sans titre)'}
                     description={
