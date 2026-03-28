@@ -114,15 +114,6 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
               }}>
                 Arcane Ledger
               </h1>
-              <p style={{
-                fontSize: 10,
-                letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-                color: '#78716c',
-                margin: 0,
-              }}>
-                Master Magician
-              </p>
             </div>
           </div>
 
