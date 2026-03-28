@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { router, Link, Head } from '@inertiajs/react'
 import { Form, Input, Button, Typography } from 'antd'
 import Icon from '~/components/Icon'
+import FlashMessages from '~/components/FlashMessages'
 
 const { Text } = Typography
 
@@ -43,6 +44,7 @@ export default function Login() {
   return (
     <>
       <Head title="Connexion" />
+      <FlashMessages />
       <div style={{ display: 'flex', minHeight: '100vh' }}>
 
         {/* Panneau gauche — identité de marque */}
