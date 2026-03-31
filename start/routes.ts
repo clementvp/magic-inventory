@@ -21,6 +21,7 @@ const MaterialsController = () => import('#controllers/materials_controller')
 const RoutinesController = () => import('#controllers/routines_controller')
 const ShowsController = () => import('#controllers/shows_controller')
 const NotesController = () => import('#controllers/notes_controller')
+const ShowEventsController = () => import('#controllers/show_events_controller')
 
 // Page d'accueil publique avec redirection intelligente
 router.get('/', [HomeController, 'index']).as('home')
@@ -58,6 +59,9 @@ router
     router.delete('/shows/:id/routines/:routineId', [ShowsController, 'detachRoutine'])
     router.get('/shows/:id/checklist', [ShowsController, 'checklist'])
     router.resource('notes', NotesController).only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
+    router.get('/calendar', [ShowEventsController, 'index']).as('calendar')
+    router.post('/show-events', [ShowEventsController, 'store'])
+    router.delete('/show-events/:id', [ShowEventsController, 'destroy'])
   })
   .use(middleware.auth())
 

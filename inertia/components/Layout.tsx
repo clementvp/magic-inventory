@@ -10,6 +10,7 @@ interface LayoutProps {
 }
 
 const NAV_ITEMS = [
+  { key: 'calendar',         href: '/calendar',          icon: 'calendar_month', label: 'Calendrier' },
   { key: 'categories',       href: '/categories',        icon: 'category',       label: 'Catégories' },
   { key: 'types',            href: '/types',             icon: 'style',          label: 'Types' },
   { key: 'storage-locations',href: '/storage-locations', icon: 'inventory_2',    label: 'Stockage' },
@@ -28,6 +29,7 @@ const LABEL_MAP: Record<string, string> = {
   routines: 'Routines',
   shows: 'Spectacles',
   notes: 'Notes',
+  calendar: 'Calendrier',
   dashboard: 'Accueil',
   profile: 'Profil',
 }
@@ -43,6 +45,7 @@ export default function Layout({ children, title, breadcrumbLabels }: LayoutProp
     if (url.startsWith('/routines')) return 'routines'
     if (url.startsWith('/shows')) return 'shows'
     if (url.startsWith('/notes')) return 'notes'
+    if (url.startsWith('/calendar')) return 'calendar'
     if (url.startsWith('/profile')) return 'profile'
     return 'dashboard'
   }

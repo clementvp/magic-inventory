@@ -3,11 +3,15 @@
 
 import '../css/app.css';
 import 'antd/dist/reset.css';
+import 'dayjs/locale/fr';
+import dayjs from 'dayjs';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 import { ConfigProvider } from 'antd';
 import frFR from 'antd/es/locale/fr_FR';
+
+dayjs.locale('fr');
 
 const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
 
