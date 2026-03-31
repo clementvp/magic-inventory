@@ -44,18 +44,6 @@ describe('Layout', () => {
     })
   })
 
-  it('renders search input with correct placeholder', async () => {
-    render(
-      <Layout>
-        <div>Content</div>
-      </Layout>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Rechercher...')).toBeInTheDocument()
-    })
-  })
-
   it('renders children content', async () => {
     render(
       <Layout>

@@ -94,7 +94,7 @@ describe('StorageLocationsShow', () => {
   it('ferme le modal au clic sur le bouton close', async () => {
     const user = userEvent.setup()
     render(<StorageLocationsShow location={mockLocation} materials={[]} />)
-    await user.click(screen.getByRole('button', { name: 'Modifier le lieu' }))
+    await user.click(screen.getByRole('button', { name: /modifier le lieu/i }))
     const dialog = screen.getByRole('dialog')
     await user.click(within(dialog).getByRole('button', { name: /close/i }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -103,7 +103,7 @@ describe('StorageLocationsShow', () => {
   it('appelle router.delete lors de la confirmation suppression', async () => {
     const user = userEvent.setup()
     render(<StorageLocationsShow location={mockLocation} materials={[]} />)
-    const deleteButtons = await screen.findAllByRole('button', { name: 'Supprimer le lieu' })
+    const deleteButtons = await screen.findAllByRole('button', { name: /supprimer le lieu/i })
     await user.click(deleteButtons[0])
     await waitFor(() => {
       expect(screen.getAllByRole('button', { name: 'Supprimer' }).length).toBeGreaterThan(0)

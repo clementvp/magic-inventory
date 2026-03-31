@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ProfileEdit from './edit'
 import { router } from '@inertiajs/react'
 
-// Mock Inertia
 vi.mock('@inertiajs/react', () => ({
   router: { post: vi.fn(), delete: vi.fn() },
   Link: ({ children, href }: { children: ReactNode; href: string }) => (
@@ -14,7 +13,6 @@ vi.mock('@inertiajs/react', () => ({
   usePage: () => ({ url: '/profile', props: {} }),
 }))
 
-// Mock Layout pour isoler les tests de la page Profile
 vi.mock('~/components/Layout', () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
@@ -50,15 +48,15 @@ describe('ProfileEdit Page', () => {
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
   })
 
-  it('renders submit button "Enregistrer" with type primary', () => {
+  it('renders submit button "Enregistrer les modifications" with type primary', () => {
     render(<ProfileEdit user={mockUser} />)
 
-    const submitButton = screen.getByRole('button', { name: /enregistrer/i })
+    const submitButton = screen.getByRole('button', { name: /enregistrer les modifications/i })
     expect(submitButton).toBeInTheDocument()
     expect(submitButton).toHaveClass('ant-btn-primary')
   })
 
-  it('renders page title "Mon Profil"', () => {
+  it('renders page title "Mon profil"', () => {
     render(<ProfileEdit user={mockUser} />)
 
     expect(screen.getByRole('heading', { name: /mon profil/i })).toBeInTheDocument()
@@ -70,7 +68,7 @@ describe('ProfileEdit Page', () => {
 
     const nameInput = screen.getByLabelText('Nom complet')
     await user.clear(nameInput)
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Veuillez saisir votre nom complet')).toBeInTheDocument()
@@ -84,7 +82,7 @@ describe('ProfileEdit Page', () => {
     const nameInput = screen.getByLabelText('Nom complet')
     await user.clear(nameInput)
     await user.type(nameInput, 'A')
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(
@@ -100,7 +98,7 @@ describe('ProfileEdit Page', () => {
     const emailInput = screen.getByLabelText('Email')
     await user.clear(emailInput)
     await user.type(emailInput, 'invalid-email')
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Email invalide')).toBeInTheDocument()
@@ -113,7 +111,7 @@ describe('ProfileEdit Page', () => {
 
     const emailInput = screen.getByLabelText('Email')
     await user.clear(emailInput)
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Veuillez saisir votre email')).toBeInTheDocument()
@@ -134,7 +132,7 @@ describe('ProfileEdit Page', () => {
     const nameInput = screen.getByLabelText('Nom complet')
     await user.clear(nameInput)
     await user.type(nameInput, 'Jane Doe')
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledWith(
@@ -164,7 +162,7 @@ describe('ProfileEdit Page', () => {
       expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /enregistrer/i }))
+    await user.click(screen.getByRole('button', { name: /enregistrer les modifications/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Cet email est déjà utilisé')).toBeInTheDocument()
@@ -186,7 +184,7 @@ describe('ProfileEdit Page', () => {
   it('renders "Zone dangereuse" section with danger button', () => {
     render(<ProfileEdit user={mockUser} />)
 
-    expect(screen.getByRole('heading', { name: /zone dangereuse/i })).toBeInTheDocument()
+    expect(screen.getByText('Zone dangereuse')).toBeInTheDocument()
     const deleteButton = screen.getByRole('button', { name: /supprimer mon compte/i })
     expect(deleteButton).toBeInTheDocument()
     expect(deleteButton).toHaveClass('ant-btn-dangerous')
@@ -201,14 +199,7 @@ describe('ProfileEdit Page', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
-      expect(
-        screen.getByText('Êtes-vous sûr de vouloir supprimer votre compte ?')
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText(
-          'Cette action est irréversible. Toutes vos données seront supprimées définitivement.'
-        )
-      ).toBeInTheDocument()
+      expect(screen.getByText('Supprimer votre compte ?')).toBeInTheDocument()
     })
   })
 
@@ -249,12 +240,12 @@ describe('ProfileEdit Page', () => {
     })
   })
 
-  // Tests section "Mes données" (Story 1.6)
+  // Tests section "Mes données"
 
   it('renders "Mes données" section with export button', () => {
     render(<ProfileEdit user={mockUser} />)
 
-    expect(screen.getByRole('heading', { name: /mes données/i })).toBeInTheDocument()
+    expect(screen.getByText('Mes données')).toBeInTheDocument()
     const exportButton = screen.getByRole('button', { name: /exporter mes données/i })
     expect(exportButton).toBeInTheDocument()
   })

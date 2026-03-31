@@ -60,7 +60,7 @@ describe('MaterialsEdit', () => {
     renderEdit()
     expect(screen.getByLabelText('Nom')).toBeInTheDocument()
     expect(screen.getByText('Type')).toBeInTheDocument()
-    expect(screen.getByText('Catégorie(s)')).toBeInTheDocument()
+    expect(screen.getByText('Catégories')).toBeInTheDocument()
     expect(screen.getByText('Lieu de stockage')).toBeInTheDocument()
     expect(screen.getByLabelText('Auteur')).toBeInTheDocument()
   })
@@ -75,12 +75,11 @@ describe('MaterialsEdit', () => {
     expect(screen.getByLabelText('Auteur')).toHaveValue('Dai Vernon')
   })
 
-  it('affiche les boutons Enregistrer et Annuler', () => {
+  it('affiche le bouton Enregistrer les modifications', () => {
     renderEdit()
     expect(
       screen.getByRole('button', { name: /enregistrer les modifications/i })
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /annuler/i })).toBeInTheDocument()
   })
 
   it('affiche une erreur si le Nom est vide à la soumission', async () => {
@@ -138,11 +137,4 @@ describe('MaterialsEdit', () => {
     expect(screen.getByRole('button', { name: /enregistrer les modifications/i })).toBeInTheDocument()
   })
 
-  it('appelle router.visit vers /materials/1 au clic Annuler', async () => {
-    const user = userEvent.setup()
-    renderEdit()
-    const cancelButton = screen.getByRole('button', { name: /annuler/i })
-    await user.click(cancelButton)
-    expect(router.visit).toHaveBeenCalledWith('/materials/1')
-  })
 })

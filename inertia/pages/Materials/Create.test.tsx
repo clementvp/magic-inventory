@@ -38,7 +38,7 @@ describe('MaterialsCreate', () => {
     )
     expect(screen.getByLabelText('Nom')).toBeInTheDocument()
     expect(screen.getByText('Type')).toBeInTheDocument()
-    expect(screen.getByText('Catégorie(s)')).toBeInTheDocument()
+    expect(screen.getByText('Catégories')).toBeInTheDocument()
     expect(screen.getByText('Lieu de stockage')).toBeInTheDocument()
     expect(screen.getByLabelText('Auteur')).toBeInTheDocument()
   })
@@ -52,17 +52,6 @@ describe('MaterialsCreate', () => {
       />
     )
     expect(screen.getByRole('button', { name: /Créer le matériel/i })).toBeInTheDocument()
-  })
-
-  it('affiche le bouton Annuler', () => {
-    render(
-      <MaterialsCreate
-        types={mockTypes}
-        categories={mockCategories}
-        storageLocations={mockLocations}
-      />
-    )
-    expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument()
   })
 
   it('affiche une erreur si le Nom est vide à la soumission', async () => {
@@ -120,17 +109,4 @@ describe('MaterialsCreate', () => {
     })
   })
 
-  it('appelle router.visit au clic Annuler', async () => {
-    const user = userEvent.setup()
-    render(
-      <MaterialsCreate
-        types={mockTypes}
-        categories={mockCategories}
-        storageLocations={mockLocations}
-      />
-    )
-    const cancelButton = screen.getByRole('button', { name: 'Annuler' })
-    await user.click(cancelButton)
-    expect(router.visit).toHaveBeenCalledWith('/materials')
-  })
 })

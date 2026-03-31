@@ -58,38 +58,40 @@ const noMaterialsProps = {
 describe('ShowsChecklist', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('affiche warning "Ce spectacle ne contient aucune routine" si !hasRoutines', () => {
+  it('affiche warning "Aucune routine dans ce spectacle" si !hasRoutines', () => {
     render(<ShowsChecklist {...noRoutinesProps} />)
-    expect(screen.getByText('Ce spectacle ne contient aucune routine')).toBeDefined()
+    expect(screen.getByText('Aucune routine dans ce spectacle')).toBeInTheDocument()
   })
 
-  it('affiche info "Aucun matériel nécessaire pour ce spectacle" si hasRoutines && materials vide', () => {
+  it('affiche info "Aucun matériel associé aux routines" si hasRoutines && materials vide', () => {
     render(<ShowsChecklist {...noMaterialsProps} />)
-    expect(screen.getByText('Aucun matériel nécessaire pour ce spectacle')).toBeDefined()
+    expect(screen.getByText('Aucun matériel associé aux routines de ce spectacle.')).toBeInTheDocument()
   })
 
   it('affiche les noms des matériaux', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.getByText('Jeu de cartes')).toBeDefined()
-    expect(screen.getByText('Foulard rouge')).toBeDefined()
-    expect(screen.getByText('Pièce truquée')).toBeDefined()
+    expect(screen.getByText('Jeu de cartes')).toBeInTheDocument()
+    expect(screen.getByText('Foulard rouge')).toBeInTheDocument()
+    expect(screen.getByText('Pièce truquée')).toBeInTheDocument()
   })
 
-  it('affiche le type en Tag', () => {
+  it('affiche le type', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.getByText('Cartes')).toBeDefined()
-    expect(screen.getByText('Accessoire')).toBeDefined()
+    expect(screen.getByText('Cartes')).toBeInTheDocument()
+    expect(screen.getByText('Accessoire')).toBeInTheDocument()
   })
 
-  it('affiche "—" si type est null', () => {
+  it("n'affiche pas de type si null", () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.getByText('—')).toBeDefined()
+    // Pièce truquée a type null → pas de type affiché pour elle
+    const itemButtons = screen.getAllByRole('button', { name: /^Cocher/ })
+    expect(itemButtons.length).toBe(3)
   })
 
   it('affiche le lieu de stockage cliquable', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.getByText('Tiroir cartes')).toBeDefined()
-    expect(screen.getByText('Boîte pièces')).toBeDefined()
+    expect(screen.getByText('Tiroir cartes')).toBeInTheDocument()
+    expect(screen.getByText('Boîte pièces')).toBeInTheDocument()
   })
 
   it('clic sur le lieu de stockage navigue vers /storage-locations/:id', async () => {
@@ -98,33 +100,38 @@ describe('ShowsChecklist', () => {
     expect(router.visit).toHaveBeenCalledWith('/storage-locations/5')
   })
 
-  it('affiche "Lieu non défini" en orange si storageLocation est null', () => {
+  it('affiche "Lieu non défini" si storageLocation est null', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    const lieuNonDefini = screen.getByText('Lieu non défini')
-    expect(lieuNonDefini).toBeDefined()
-    expect((lieuNonDefini as HTMLElement).style.color).toBe('orange')
+    expect(screen.getByText('Lieu non défini')).toBeInTheDocument()
   })
 
-  it('coche un item → texte barré + opacité réduite', async () => {
+  it('coche un item → texte barré', async () => {
     render(<ShowsChecklist {...sampleProps} />)
-    const checkbox = screen.getByRole('checkbox', { name: /Cocher Jeu de cartes/i })
-    await userEvent.click(checkbox)
+    const itemButton = screen.getByRole('button', { name: /Cocher Jeu de cartes/i })
+    await userEvent.click(itemButton)
     const nom = screen.getByText('Jeu de cartes')
     expect(nom.style.textDecoration).toBe('line-through')
   })
 
-  it('"Checklist complète !" absent si pas tous cochés', () => {
+  it('coche un item → opacité réduite sur le conteneur', async () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.queryByText('Checklist complète !')).toBeNull()
+    const itemButton = screen.getByRole('button', { name: /Cocher Jeu de cartes/i })
+    await userEvent.click(itemButton)
+    expect((itemButton as HTMLElement).style.opacity).toBe('0.75')
   })
 
-  it('"Checklist complète !" visible quand tous les items sont cochés', async () => {
+  it('"Tout est prêt !" absent si pas tous cochés', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    const checkboxes = screen.getAllByRole('checkbox')
-    for (const cb of checkboxes) {
-      await userEvent.click(cb)
+    expect(screen.queryByText('Tout est prêt !')).toBeNull()
+  })
+
+  it('"Tout est prêt !" visible quand tous les items sont cochés', async () => {
+    render(<ShowsChecklist {...sampleProps} />)
+    const itemButtons = screen.getAllByRole('button', { name: /^Cocher/ })
+    for (const btn of itemButtons) {
+      await userEvent.click(btn)
     }
-    expect(screen.getByText('Checklist complète !')).toBeDefined()
+    expect(screen.getByText('Tout est prêt !')).toBeInTheDocument()
   })
 
   it('bouton "Retour au spectacle" navigue vers /shows/:id', async () => {
@@ -133,23 +140,14 @@ describe('ShowsChecklist', () => {
     expect(router.visit).toHaveBeenCalledWith('/shows/1')
   })
 
-  it('affiche le titre h1 "Checklist — [nom du spectacle]"', () => {
+  it('affiche le titre h1 avec le nom du spectacle', () => {
     render(<ShowsChecklist {...sampleProps} />)
-    expect(screen.getByRole('heading', { level: 1, name: /Checklist — Spectacle Cocktail/i })).toBeDefined()
+    expect(screen.getByRole('heading', { level: 1, name: /spectacle cocktail/i })).toBeInTheDocument()
   })
 
   it('passe title="Checklist" au Layout', () => {
     render(<ShowsChecklist {...sampleProps} />)
     expect(screen.getByTestId('layout')).toHaveAttribute('data-title', 'Checklist')
-  })
-
-  it('coche un item → opacité réduite sur le conteneur', async () => {
-    render(<ShowsChecklist {...sampleProps} />)
-    const checkbox = screen.getByRole('checkbox', { name: /Cocher Jeu de cartes/i })
-    await userEvent.click(checkbox)
-    const nom = screen.getByText('Jeu de cartes')
-    const conteneur = nom.parentElement as HTMLElement
-    expect(conteneur.style.opacity).toBe('0.5')
   })
 
   it('entrée clavier sur le lieu navigue vers /storage-locations/:id', async () => {

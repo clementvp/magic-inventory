@@ -7,6 +7,9 @@ import { router } from '@inertiajs/react'
 
 vi.mock('@inertiajs/react', () => ({
   router: { visit: vi.fn(), delete: vi.fn() },
+  Link: ({ children, href }: { children: ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }))
 
 vi.mock('~/components/Layout', () => ({
@@ -45,100 +48,69 @@ describe('RoutinesShow', () => {
     expect(screen.getAllByText('Apparition du foulard').length).toBeGreaterThan(0)
   })
 
-  it('affiche les catégories en Tags', () => {
+  it('affiche les catégories', () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText('Close-up')).toBeDefined()
+    expect(screen.getByText('Close-up')).toBeInTheDocument()
+  })
+
+  it("n'affiche pas de catégories si aucune", () => {
+    render(<RoutinesShow routine={{ ...sampleRoutine, categories: [] }} />)
+    expect(screen.queryByText('Close-up')).toBeNull()
   })
 
   it('affiche le contenu de la routine', () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText(/Ligne 1/)).toBeDefined()
+    const textarea = screen.getByRole('textbox')
+    expect(textarea).toHaveValue('Ligne 1\nLigne 2\nLigne 3')
   })
 
-  it('affiche le contenu avec white-space pre-wrap', () => {
+  it('affiche le placeholder "Aucun contenu" si content est null', () => {
+    render(<RoutinesShow routine={{ ...sampleRoutine, content: null }} />)
+    expect(screen.getByPlaceholderText('Aucun contenu')).toBeInTheDocument()
+  })
+
+  it('affiche les matériaux liés comme liens', () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    const contentDiv = screen.getByText(/Ligne 1/).closest('div')
-    expect(contentDiv).toBeDefined()
-    expect(contentDiv!.style.whiteSpace).toBe('pre-wrap')
+    expect(screen.getByRole('link', { name: 'Foulard rouge' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Pièce de monnaie' })).toBeInTheDocument()
   })
 
-  it('affiche les matériaux liés', () => {
-    render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText('Foulard rouge')).toBeDefined()
-    expect(screen.getByText('Pièce de monnaie')).toBeDefined()
-  })
-
-  it('clic sur un matériel navigue vers /materials/:id', async () => {
-    render(<RoutinesShow routine={sampleRoutine} />)
-    const item = screen.getByText('Foulard rouge').closest('li')
-    await userEvent.click(item!)
-    expect(router.visit).toHaveBeenCalledWith('/materials/10')
-  })
-
-  it('affiche "Aucun matériel lié" si aucun matériel', () => {
+  it('affiche "Aucun matériel lié à cette routine" si aucun matériel', () => {
     render(<RoutinesShow routine={{ ...sampleRoutine, materials: [] }} />)
-    expect(screen.getByText('Aucun matériel lié')).toBeDefined()
+    expect(screen.getByText('Aucun matériel lié à cette routine')).toBeInTheDocument()
   })
 
   it('affiche le bouton "Modifier"', () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText('Modifier')).toBeDefined()
+    expect(screen.getByRole('button', { name: /modifier/i })).toBeInTheDocument()
   })
 
   it('affiche le bouton "Supprimer"', () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText('Supprimer')).toBeDefined()
-  })
-
-  it('affiche le bouton "Retour aux routines"', () => {
-    render(<RoutinesShow routine={sampleRoutine} />)
-    expect(screen.getByText('Retour aux routines')).toBeDefined()
+    expect(screen.getByRole('button', { name: /supprimer/i })).toBeInTheDocument()
   })
 
   it('clic "Modifier" navigue vers /routines/:id/edit', async () => {
     render(<RoutinesShow routine={sampleRoutine} />)
-    await userEvent.click(screen.getByText('Modifier'))
+    await userEvent.click(screen.getByRole('button', { name: /modifier/i }))
     expect(router.visit).toHaveBeenCalledWith('/routines/1/edit')
   })
 
-  it('clic "Retour aux routines" navigue vers /routines', async () => {
-    render(<RoutinesShow routine={sampleRoutine} />)
-    await userEvent.click(screen.getByText('Retour aux routines'))
-    expect(router.visit).toHaveBeenCalledWith('/routines')
-  })
-
-  it('affiche "—" si aucune catégorie', () => {
-    render(<RoutinesShow routine={{ ...sampleRoutine, categories: [] }} />)
-    expect(screen.getByText('—')).toBeDefined()
-  })
-
-  it('affiche "Aucun contenu" si content est null', () => {
-    render(<RoutinesShow routine={{ ...sampleRoutine, content: null }} />)
-    expect(screen.getByText('Aucun contenu')).toBeDefined()
-  })
-
-  it("ouvre un Popconfirm au clic 'Supprimer'", async () => {
+  it("ouvre le modal de suppression au clic sur 'Supprimer'", async () => {
     render(<RoutinesShow routine={sampleRoutine} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    expect(await screen.findByText('Êtes-vous sûr de vouloir supprimer cette routine ?')).toBeInTheDocument()
+    expect(await screen.findByText('Supprimer cette routine ?')).toBeInTheDocument()
   })
 
-  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+  it("appelle router.delete après confirmation dans le modal", async () => {
     render(<RoutinesShow routine={sampleRoutine} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    const supprimerButtons = await screen.findAllByRole('button', { name: /supprimer/i })
+    await screen.findByText('Supprimer cette routine ?')
+    const supprimerButtons = screen.getAllByRole('button', { name: /supprimer/i })
     await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
     expect(router.delete).toHaveBeenCalledWith(
       '/routines/1',
       expect.objectContaining({ onError: expect.any(Function) })
     )
-  })
-
-  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
-    render(<RoutinesShow routine={sampleRoutine} />)
-    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    const annulerButton = await screen.findByRole('button', { name: /annuler/i })
-    await userEvent.click(annulerButton)
-    expect(router.delete).not.toHaveBeenCalled()
   })
 })

@@ -1,44 +1,31 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Index from './Index'
+
+vi.mock('@inertiajs/react', () => ({
+  Head: () => null,
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}))
 
 describe('Home/Index (Landing Page)', () => {
   it('renders the application name', () => {
     render(<Index />)
-    expect(screen.getByText('magic-inventory')).toBeInTheDocument()
+    expect(screen.getAllByText('Arcane Ledger').length).toBeGreaterThan(0)
   })
 
-  it('renders the slogan', () => {
+  it('renders a link to /register', () => {
     render(<Index />)
-    expect(screen.getByText('Organisez la magie')).toBeInTheDocument()
+    const registerLinks = screen.getAllByRole('link', { name: /s'inscrire/i })
+    expect(registerLinks.length).toBeGreaterThan(0)
+    expect(registerLinks[0]).toHaveAttribute('href', '/register')
   })
 
-  it('renders the description', () => {
+  it('renders a link to /login', () => {
     render(<Index />)
-    expect(
-      screen.getByText(
-        /Centralisez votre inventaire, routines et spectacles en un seul endroit/i
-      )
-    ).toBeInTheDocument()
-  })
-
-  it('renders signup and login buttons', () => {
-    render(<Index />)
-    expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /se connecter/i })).toBeInTheDocument()
-  })
-
-  it('signup button has primary type (colorPrimary)', () => {
-    render(<Index />)
-    const signupButton = screen.getByRole('button', { name: /s'inscrire/i })
-    // Ant Design Button with type="primary" has class "ant-btn-primary"
-    expect(signupButton).toHaveClass('ant-btn-primary')
-  })
-
-  it('login button has default type (gray)', () => {
-    render(<Index />)
-    const loginButton = screen.getByRole('button', { name: /se connecter/i })
-    // Ant Design Button with type="default" has class "ant-btn-default"
-    expect(loginButton).toHaveClass('ant-btn-default')
+    const loginLinks = screen.getAllByRole('link', { name: /se connecter/i })
+    expect(loginLinks.length).toBeGreaterThan(0)
+    expect(loginLinks[0]).toHaveAttribute('href', '/login')
   })
 })

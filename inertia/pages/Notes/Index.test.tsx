@@ -155,21 +155,22 @@ describe('NotesIndex', () => {
 
   it('affiche le bouton Supprimer sur chaque note', () => {
     render(<NotesIndex notes={sampleNotes} />)
-    expect(screen.getAllByRole('button', { name: /supprimer/i })).toHaveLength(2)
+    expect(screen.getAllByTitle('Supprimer')).toHaveLength(2)
   })
 
-  it("ouvre un Popconfirm au clic 'Supprimer' sur une note", async () => {
+  it("ouvre le modal de suppression au clic 'Supprimer' sur une note", async () => {
     render(<NotesIndex notes={sampleNotes} />)
-    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    const supprimerBtns = screen.getAllByTitle('Supprimer')
     await userEvent.click(supprimerBtns[0])
-    expect(await screen.findByText("Êtes-vous sûr de vouloir supprimer cette note ?")).toBeInTheDocument()
+    expect(await screen.findByText('Supprimer cette note ?')).toBeInTheDocument()
   })
 
-  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+  it("appelle router.delete après confirmation dans le modal", async () => {
     render(<NotesIndex notes={sampleNotes} />)
-    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    const supprimerBtns = screen.getAllByTitle('Supprimer')
     await userEvent.click(supprimerBtns[0])
-    const confirmBtns = await screen.findAllByRole('button', { name: /supprimer/i })
+    await screen.findByText('Supprimer cette note ?')
+    const confirmBtns = screen.getAllByRole('button', { name: /^supprimer$/i })
     await userEvent.click(confirmBtns[confirmBtns.length - 1])
     expect(router.delete).toHaveBeenCalledWith(
       '/notes/1',
@@ -177,9 +178,9 @@ describe('NotesIndex', () => {
     )
   })
 
-  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+  it("n'appelle pas router.delete après annulation dans le modal", async () => {
     render(<NotesIndex notes={sampleNotes} />)
-    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    const supprimerBtns = screen.getAllByTitle('Supprimer')
     await userEvent.click(supprimerBtns[0])
     const annulerButton = await screen.findByRole('button', { name: /annuler/i })
     await userEvent.click(annulerButton)
@@ -188,22 +189,23 @@ describe('NotesIndex', () => {
 
   it("clic 'Supprimer' ne navigue pas vers /notes/:id/edit (stopPropagation)", async () => {
     render(<NotesIndex notes={sampleNotes} />)
-    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    const supprimerBtns = screen.getAllByTitle('Supprimer')
     await userEvent.click(supprimerBtns[0])
     expect(router.visit).not.toHaveBeenCalled()
   })
 
-  it("les boutons Supprimer sont de nouveau actifs après une erreur de suppression", async () => {
+  it("le modal se ferme et les boutons restent actifs après une erreur de suppression", async () => {
     vi.mocked(router.delete).mockImplementation((_url, callbacks) => {
       (callbacks as { onError?: () => void }).onError?.()
       return undefined as unknown as ReturnType<typeof router.delete>
     })
     render(<NotesIndex notes={sampleNotes} />)
-    const supprimerBtns = screen.getAllByRole('button', { name: /supprimer/i })
+    const supprimerBtns = screen.getAllByTitle('Supprimer')
     await userEvent.click(supprimerBtns[0])
-    const confirmBtns = await screen.findAllByRole('button', { name: /supprimer/i })
+    await screen.findByText('Supprimer cette note ?')
+    const confirmBtns = screen.getAllByRole('button', { name: /^supprimer$/i })
     await userEvent.click(confirmBtns[confirmBtns.length - 1])
-    screen.getAllByRole('button', { name: /supprimer/i }).forEach((btn) => {
+    screen.getAllByTitle('Supprimer').forEach((btn) => {
       expect(btn).not.toBeDisabled()
     })
   })

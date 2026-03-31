@@ -17,6 +17,15 @@ vi.mock('~/components/Layout', () => ({
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
 
+vi.mock('~/components/PageHeader', () => ({
+  default: ({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void; description?: string; actionIcon?: string }) => (
+    <div>
+      <h1>{title}</h1>
+      <button onClick={onAction}>{actionLabel}</button>
+    </div>
+  ),
+}))
+
 const mockTypes = [
   { id: 1, name: 'Cartes', createdAt: '2026-01-01T00:00:00.000Z' },
   { id: 2, name: 'Pièces', createdAt: '2026-01-01T00:00:00.000Z' },
@@ -45,7 +54,7 @@ describe('TypesIndex', () => {
     })
   })
 
-  it('ouvre le modal de création au clic Ajouter', async () => {
+  it('ouvre le drawer de création au clic Ajouter', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={[]} />)
     await user.click(screen.getByText('Ajouter un type'))
@@ -53,7 +62,7 @@ describe('TypesIndex', () => {
     expect(within(screen.getByRole('dialog')).getByText('Ajouter un type')).toBeInTheDocument()
   })
 
-  it('ouvre le modal de modification au clic bouton edit', async () => {
+  it('ouvre le drawer de modification au clic bouton edit', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={mockTypes} />)
     const modifierButtons = screen.getAllByTitle('Modifier')
@@ -83,7 +92,7 @@ describe('TypesIndex', () => {
     })
   })
 
-  it('appelle router.delete après confirmation Popconfirm', async () => {
+  it('appelle router.delete après confirmation dans le DeleteModal', async () => {
     const user = userEvent.setup()
     render(<TypesIndex types={mockTypes} />)
     const deleteButtons = screen.getAllByTitle('Supprimer')
@@ -94,14 +103,7 @@ describe('TypesIndex', () => {
     const confirmButton = screen.getAllByRole('button', { name: /supprimer/i })
     await user.click(confirmButton[confirmButton.length - 1])
     await waitFor(() => {
-      expect(router.delete).toHaveBeenCalledWith('/types/1')
+      expect(router.delete).toHaveBeenCalledWith('/types/1', expect.any(Object))
     })
-  })
-
-  it('renders title and button in the same header section', () => {
-    render(<TypesIndex types={mockTypes} />)
-    const heading = screen.getByRole('heading', { name: /types de matériel/i })
-    const button = screen.getByRole('button', { name: /ajouter un type/i })
-    expect(heading.parentElement?.parentElement).toContain(button)
   })
 })

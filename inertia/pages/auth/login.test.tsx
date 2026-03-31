@@ -7,6 +7,7 @@ import {router} from '@inertiajs/react'
 // Mock Inertia
 vi.mock('@inertiajs/react', () => ({
   router: { post: vi.fn() },
+  Head: () => null,
   Link: ({ children, href }: any) => <a href={href}>{children}</a>,
   usePage: () => ({ url: '/login', props: {} })
 }))

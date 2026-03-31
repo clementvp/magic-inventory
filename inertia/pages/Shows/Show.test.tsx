@@ -25,8 +25,8 @@ const sampleShow = {
   notes: 'Note de préparation\nDeuxième ligne',
   createdAt: '2026-01-15T12:00:00.000Z',
   routines: [
-    { id: 10, name: 'Routine Cartes', categories: [{ id: 1, name: 'Magie des cartes' }] },
-    { id: 11, name: 'Routine Pièces', categories: [] },
+    { id: 10, name: 'Routine Cartes', order: 1, categories: [{ id: 1, name: 'Magie des cartes' }] },
+    { id: 11, name: 'Routine Pièces', order: 2, categories: [] },
   ],
 }
 
@@ -45,7 +45,7 @@ describe('ShowsShow', () => {
 
   it('affiche le nom du spectacle en titre h1', () => {
     render(<ShowsShow show={sampleShow} />)
-    expect(screen.getByRole('heading', { level: 1, name: 'Spectacle Cocktail' })).toBeDefined()
+    expect(screen.getByRole('heading', { level: 1, name: 'Spectacle Cocktail' })).toBeInTheDocument()
   })
 
   it('passe le nom du spectacle au Layout pour le breadcrumb', () => {
@@ -55,14 +55,7 @@ describe('ShowsShow', () => {
 
   it('affiche les notes du spectacle', () => {
     render(<ShowsShow show={sampleShow} />)
-    expect(screen.getByText(/Note de préparation/)).toBeDefined()
-  })
-
-  it('préserve les retours à la ligne dans les notes (style pre-wrap)', () => {
-    render(<ShowsShow show={sampleShow} />)
-    const notesEl = screen.getByText(/Note de préparation/)
-    const styledEl = notesEl.closest('[style]') as HTMLElement
-    expect(styledEl?.style.whiteSpace).toBe('pre-wrap')
+    expect(screen.getByText(/Note de préparation/)).toBeInTheDocument()
   })
 
   it("n'affiche pas la section notes si notes est null", () => {
@@ -72,34 +65,30 @@ describe('ShowsShow', () => {
 
   it('affiche les noms des routines', () => {
     render(<ShowsShow show={sampleShow} />)
-    expect(screen.getByText('Routine Cartes')).toBeDefined()
-    expect(screen.getByText('Routine Pièces')).toBeDefined()
+    expect(screen.getByText('Routine Cartes')).toBeInTheDocument()
+    expect(screen.getByText('Routine Pièces')).toBeInTheDocument()
   })
 
-  it('affiche les catégories des routines en Tags', () => {
+  it('affiche les catégories des routines', () => {
     render(<ShowsShow show={sampleShow} />)
-    expect(screen.getByText('Magie des cartes')).toBeDefined()
-  })
-
-  it('affiche "—" pour une routine sans catégories', () => {
-    render(<ShowsShow show={sampleShow} />)
-    expect(screen.getByText('—')).toBeDefined()
+    expect(screen.getByText('Magie des cartes')).toBeInTheDocument()
   })
 
   it("affiche l'empty state quand il n'y a aucune routine", () => {
     render(<ShowsShow show={showNoRoutines} />)
-    expect(screen.getByText('Aucune routine dans ce spectacle')).toBeDefined()
+    expect(screen.getByText('Aucune routine dans ce spectacle')).toBeInTheDocument()
   })
 
   it('clic sur une routine navigue vers /routines/:id', async () => {
     render(<ShowsShow show={sampleShow} />)
-    await userEvent.click(screen.getByTestId('routine-item-10'))
+    await userEvent.click(screen.getByRole('button', { name: /voir la routine routine cartes/i }))
     expect(router.visit).toHaveBeenCalledWith('/routines/10')
   })
 
   it('entrée clavier sur une routine navigue vers /routines/:id', async () => {
     render(<ShowsShow show={sampleShow} />)
-    screen.getByTestId('routine-item-10').focus()
+    const routineBtn = screen.getByRole('button', { name: /voir la routine routine cartes/i })
+    routineBtn.focus()
     await userEvent.keyboard('{Enter}')
     expect(router.visit).toHaveBeenCalledWith('/routines/10')
   })
@@ -116,40 +105,43 @@ describe('ShowsShow', () => {
     expect(router.visit).toHaveBeenCalledWith('/shows/1/checklist')
   })
 
-  it("ouvre un Popconfirm au clic 'Supprimer'", async () => {
+  it("ouvre le modal de suppression au clic 'Supprimer'", async () => {
     render(<ShowsShow show={sampleShow} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    expect(await screen.findByText("Êtes-vous sûr de vouloir supprimer ce spectacle ?")).toBeInTheDocument()
+    expect(await screen.findByText('Supprimer ce spectacle ?')).toBeInTheDocument()
   })
 
-  it("appelle router.delete après confirmation dans le Popconfirm", async () => {
+  it("appelle router.delete après confirmation dans le modal", async () => {
     render(<ShowsShow show={sampleShow} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    const confirmBtn = await screen.findByRole('button', { name: /oui, supprimer/i })
-    await userEvent.click(confirmBtn)
+    await screen.findByText('Supprimer ce spectacle ?')
+    const supprimerButtons = screen.getAllByRole('button', { name: /^supprimer$/i })
+    await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
     expect(router.delete).toHaveBeenCalledWith(
       '/shows/1',
       expect.objectContaining({ onError: expect.any(Function), onFinish: expect.any(Function) })
     )
   })
 
-  it("n'appelle pas router.delete après annulation dans le Popconfirm", async () => {
+  it("n'appelle pas router.delete après annulation dans le modal", async () => {
     render(<ShowsShow show={sampleShow} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    const annulerButton = await screen.findByRole('button', { name: /annuler/i })
+    await screen.findByText('Supprimer ce spectacle ?')
+    const annulerButton = screen.getByRole('button', { name: /annuler/i })
     await userEvent.click(annulerButton)
     expect(router.delete).not.toHaveBeenCalled()
   })
 
   it("onError affiche message.error et réinitialise l'état loading", async () => {
-    const messageSpy = vi.spyOn(message, 'error').mockImplementation(() => {})
+    const messageSpy = vi.spyOn(message, 'error').mockImplementation(() => { return Promise.resolve() as any })
     vi.mocked(router.delete).mockImplementationOnce((_url: string, options: any) => {
       options?.onError?.()
     })
     render(<ShowsShow show={sampleShow} />)
     await userEvent.click(screen.getByRole('button', { name: /supprimer/i }))
-    const confirmBtn = await screen.findByRole('button', { name: /oui, supprimer/i })
-    await userEvent.click(confirmBtn)
+    await screen.findByText('Supprimer ce spectacle ?')
+    const supprimerButtons = screen.getAllByRole('button', { name: /^supprimer$/i })
+    await userEvent.click(supprimerButtons[supprimerButtons.length - 1])
     expect(messageSpy).toHaveBeenCalledWith('Une erreur est survenue lors de la suppression du spectacle')
     messageSpy.mockRestore()
   })
